@@ -1,8 +1,8 @@
-actions.precombat+=/use_item,name=imperfect_ascendancy_serum
 actions.precombat+=/apply_poison
+actions.precombat+=/use_item,name=imperfect_ascendancy_serum
 actions.precombat+=/stealth,precombat_seconds=2
 # Builds with Keep it Rolling prepull Adrenaline Rush before Roll the Bones to consume Loaded Dice immediately instead of on the next pandemic roll
-actions.precombat+=/adrenaline_rush,precombat_seconds=2,if=settings.use_ld_opener&talent.improved_adrenaline_rush&buff.adrenaline_rush.down&talent.keep_it_rolling&talent.loaded_dice
+actions.precombat+=/adrenaline_rush,precombat_seconds=2,if=talent.improved_adrenaline_rush&buff.adrenaline_rush.down&talent.keep_it_rolling&talent.loaded_dice
 actions.precombat+=/roll_the_bones,precombat_seconds=2,if=buff.roll_the_bones.down
 actions.precombat+=/adrenaline_rush,precombat_seconds=1,if=talent.improved_adrenaline_rush&buff.adrenaline_rush.down
 
@@ -25,8 +25,8 @@ actions+=/variable,name=finish_condition,value=combo_points>=cp_max_spend-1-(ste
 actions+=/variable,name=blade_flurry_sync,value=spell_targets.blade_flurry<2&raid_event.adds.in>20|buff.blade_flurry.remains>gcd
 actions+=/call_action_list,name=cds
 # High priority stealth list, will fall through if no conditions are met
-actions+=/call_action_list,name=stealth,strict=1,if=stealthed.all&stealthed.all_remains>settings.stealth_padding
-actions+=/run_action_list,name=finish,strict=1,if=variable.finish_condition
+actions+=/call_action_list,name=stealth,strict=1,if=stealthed.all
+actions+=/call_action_list,name=finish,strict=1,if=variable.finish_condition
 actions+=/call_action_list,name=build
 actions+=/arcane_torrent,if=energy.base_deficit>=15+energy.regen
 actions+=/arcane_pulse
@@ -75,7 +75,7 @@ actions.cds+=/call_action_list,name=stealth_cds,if=!stealthed.all
 actions.cds+=/thistle_tea,if=!buff.thistle_tea.up&(energy.base_deficit>=150|fight_remains<charges*6)
 # Use Blade Rush at minimal energy outside of stealth
 actions.cds+=/blade_rush,if=energy.base_time_to_max>4&!stealthed.all
-actions.cds+=/potion,if=buff.bloodlust.react|fight_remains<30|buff.adrenaline_rush.up
+actions.cds+=/potion,if=buff.bloodlust.up|fight_remains<30|buff.adrenaline_rush.up
 actions.cds+=/blood_fury
 actions.cds+=/berserking
 actions.cds+=/fireblood
