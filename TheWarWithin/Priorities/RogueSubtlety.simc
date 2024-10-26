@@ -77,7 +77,7 @@ actions.race+=/blood_fury,if=variable.racial_sync
 actions.race+=/berserking,if=variable.racial_sync
 actions.race+=/fireblood,if=variable.racial_sync&buff.shadow_dance.up
 actions.race+=/ancestral_call,if=variable.racial_sync
-actions.race+=/invoke_external_buff,name=power_infusion,if=buff.shadow_dance.up
+## actions.race+=/invoke_external_buff,name=power_infusion,if=buff.shadow_dance.up
 
 # Shadow Dance, Vanish, Shadowmeld
 actions.stealth_cds+=/shadow_dance,if=variable.shd_cp&variable.maintenance&cooldown.secret_technique.remains<=24&(buff.symbols_of_death.remains>=6|buff.flagellation_persist.remains>=6)|boss&boss&fight_remains<=10
