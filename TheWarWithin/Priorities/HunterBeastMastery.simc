@@ -48,7 +48,7 @@ actions.st+=/multishot,if=buff.beast_cleave.remains<gcd*1.25&talent.bleak_powder
 actions.st+=/black_arrow
 actions.st+=/kill_command
 actions.st+=/dire_beast
-actions.st+=/barbed_shot,cycle_targets=1,if=talent.wild_call&charges_fractional>1.4|buff.call_of_the_wild.up|full_recharge_time<gcd&cooldown.bestial_wrath.remains|talent.scent_of_blood&(cooldown.bestial_wrath.remains<12+gcd)|talent.furious_assault|talent.black_arrow&(talent.barbed_scales|talent.savagery)|fight_remains<9
+actions.st+=/barbed_shot,cycle_targets=1,if=talent.wild_call&charges_fractional>1.4|buff.call_of_the_wild.up|full_recharge_time<gcd&cooldown.bestial_wrath.remains|talent.scent_of_blood&(cooldown.bestial_wrath.remains<12+gcd)|talent.furious_assault|talent.black_arrow&(talent.barbed_scales|talent.savagery)|boss&fight_remains<9
 actions.st+=/cobra_shot,if=buff.bestial_wrath.up&talent.killer_cobra
 actions.st+=/kill_shot
 actions.st+=/lights_judgment,if=buff.bestial_wrath.down|target.time_to_die<5
