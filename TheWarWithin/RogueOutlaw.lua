@@ -891,7 +891,7 @@ spec:RegisterAbilities( {
         gcd = "off",
 
         talent = "adrenaline_rush",
-        startsCombat = function () return talent.hand_of_fate.enabled end,
+        startsCombat = false,
         texture = 136206,
 
         toggle = "cooldowns",
