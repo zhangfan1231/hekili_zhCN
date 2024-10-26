@@ -38,9 +38,9 @@ actions+=/run_action_list,name=st
 actions.aoe+=/wrath,if=variable.enter_lunar&variable.eclipse&variable.eclipse_remains<cast_time&!variable.cd_condition
 actions.aoe+=/starfire,if=!variable.enter_lunar&variable.eclipse&variable.eclipse_remains<cast_time&!variable.cd_condition
 actions.aoe+=/starfall,if=astral_power.deficit<=variable.passive_asp+6
-actions.aoe+=/moonfire,cycle_targets=1,if=refreshable&(target.time_to_die-remains)>6&astral_power.deficit>variable.passive_asp+energize_amount&!boss
-actions.aoe+=/sunfire,cycle_targets=1,if=refreshable&(target.time_to_die-remains)>6-(spell_targets%2)&astral_power.deficit>variable.passive_asp+energize_amount
-actions.aoe+=/moonfire,cycle_targets=1,if=refreshable&(target.time_to_die-remains)>6&astral_power.deficit>variable.passive_asp+energize_amount&boss
+actions.aoe+=/moonfire,cycle_targets=1,if=refreshable&(target.time_to_die-remains)>6&(!talent.treants_of_the_moon|spell_targets-active_dot.moonfire_dmg>6|cooldown.force_of_nature.remains>3&!buff.harmony_of_the_grove.up)&!boss
+actions.aoe+=/sunfire,cycle_targets=1,if=refreshable&(target.time_to_die-remains)>6-(spell_targets%2)
+actions.aoe+=/moonfire,cycle_targets=1,if=refreshable&(target.time_to_die-remains)>6&(!talent.treants_of_the_moon|spell_targets-active_dot.moonfire_dmg>6|cooldown.force_of_nature.remains>3&!buff.harmony_of_the_grove.up)&boss
 ## actions.aoe+=/wrath,if=cooldown.ca_inc.remains>cast_time+gcd.max&variable.enter_lunar&(!variable.eclipse|variable.eclipse_remains<cast_time)
 ## actions.aoe+=/starfire,if=cooldown.ca_inc.remains>cast_time+gcd.max&!variable.enter_lunar&(!variable.eclipse|variable.eclipse_remains<cast_time)
 actions.aoe+=/stellar_flare,cycle_targets=1,if=refreshable&(target.time_to_die-remains-target>7+spell_targets)&spell_targets<(11-talent.umbral_intensity.rank-(2*talent.astral_smolder)-talent.lunar_calling)
