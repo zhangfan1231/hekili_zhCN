@@ -5,7 +5,7 @@ actions.precombat+=/variable,name=on_use_trinket,value=0
 actions.precombat+=/variable,name=on_use_trinket,op=add,value=(trinket.1.has_proc&trinket.1.cooldown.duration|trinket.1.is.spymasters_web|trinket.1.is.signet_of_the_priory)&!trinket.1.is.arakara_sacbrood
 actions.precombat+=/variable,name=on_use_trinket,op=add,value=((trinket.2.has_proc&trinket.2.cooldown.duration|trinket.2.is.spymasters_web|trinket.2.is.signet_of_the_priory)*2&!trinket.2.is.arakara_sacbrood)
 ## Regrowth to stack for Keeper of the Grove...
-actions.precombat+=/regrowth,if=hero_tree.keeper_of_the_grove&!talent.stellar_flare&active_dot.regrowth=0&!prev.1.regrowth&!prev.1.wrath
+actions.precombat+=/regrowth,if=hero_tree.keeper_of_the_grove&!talent.stellar_flare&active_dot.regrowth=0
 actions.precombat+=/wrath,if=!prev.1.wrath
 actions.precombat+=/wrath,if=prev.1.wrath&!(prev.2.wrath|prev.3.wrath|prev.4.wrath)
 actions.precombat+=/starfire,if=!talent.stellar_flare&hero_tree.elunes_chosen
