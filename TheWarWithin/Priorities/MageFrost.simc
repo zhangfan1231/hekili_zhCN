@@ -26,7 +26,7 @@ actions.aoe_ff+=/ice_nova,if=freezable&!prev_off_gcd.freeze&(prev_gcd.1.glacial_
 actions.aoe_ff+=/frost_nova,if=freezable&!prev_off_gcd.freeze&(prev_gcd.1.glacial_spike&!remaining_winters_chill)
 actions.aoe_ff+=/shifting_power,if=cooldown.comet_storm.remains>14
 actions.aoe_ff+=/frostbolt,if=buff.frostfire_empowerment.up&!buff.excess_frost.up&!buff.excess_fire.up
-actions.aoe_ff+=/glacial_spike,if=buff.icicles.stack=5&(freezable|(action.flurry.cooldown.up|remaining_winters_chill))
+actions.aoe_ff+=/glacial_spike,if=buff.icicles.stack=5&(freezable|(cooldown.flurry.up|remaining_winters_chill))
 actions.aoe_ff+=/flurry,if=!remaining_winters_chill&(buff.brain_freeze.up&!talent.excess_frost|buff.excess_frost.up|prev_gcd.1.glacial_spike)
 actions.aoe_ff+=/ice_lance,if=buff.fingers_of_frost.up|debuff.frozen.remains>travel_time|remaining_winters_chill
 actions.aoe_ff+=/flurry,if=!remaining_winters_chill
@@ -43,7 +43,7 @@ actions.aoe_ss+=/frostbolt,if=talent.deaths_chill&buff.icy_veins.remains>8&(buff
 actions.aoe_ss+=/comet_storm
 actions.aoe_ss+=/blizzard
 actions.aoe_ss+=/shifting_power,if=cooldown.icy_veins.remains>10
-actions.aoe_ss+=/glacial_spike,if=buff.icicles.stack=5&(action.flurry.cooldown.up|remaining_winters_chill)
+actions.aoe_ss+=/glacial_spike,if=buff.icicles.stack=5&(cooldown.flurry.up|remaining_winters_chill)
 actions.aoe_ss+=/ice_lance,if=buff.fingers_of_frost.up
 actions.aoe_ss+=/flurry,if=remaining_winters_chill=0
 actions.aoe_ss+=/ice_nova,if=freezable|active_enemies>=8
@@ -87,7 +87,7 @@ actions.cleave_ss+=/ice_nova,if=freezable&!prev.1.freeze&(prev_gcd.1.glacial_spi
 actions.cleave_ss+=/frozen_orb
 actions.cleave_ss+=/shifting_power,if=cooldown.icy_veins.remains>10&cooldown.flurry.remains&(boss&fight_remains>cooldown.icy_veins.remains-6)
 actions.cleave_ss+=/cone_of_cold,if=talent.coldest_snap&cooldown.comet_storm.remains>10&cooldown.frozen_orb.remains>10&remaining_winters_chill=0&active_enemies>=3
-actions.cleave_ss+=/glacial_spike,if=buff.icicles.stack=5&(action.flurry.cooldown.up|remaining_winters_chill|freezable&cooldown.freeze.ready)
+actions.cleave_ss+=/glacial_spike,if=buff.icicles.stack=5&(cooldown.flurry.up|remaining_winters_chill|freezable&cooldown.freeze.ready)
 actions.cleave_ss+=/ray_of_frost,if=remaining_winters_chill&buff.icy_veins.down
 actions.cleave_ss+=/frostbolt,if=talent.deaths_chill&(!talent.freezing_rain&buff.icy_veins.remains>8&buff.deaths_chill.stack<=13|talent.freezing_rain&buff.icy_veins.remains>22)
 actions.cleave_ss+=/ice_lance,if=buff.fingers_of_frost.up&!prev_gcd.1.glacial_spike
