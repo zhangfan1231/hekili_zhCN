@@ -26,7 +26,7 @@ actions+=/variable,name=clip_envenom,value=buff.envenom.up&buff.envenom.remains<
 actions+=/variable,name=upper_limit_energy,value=70-30*talent.sanguine_blades-10*talent.vicious_venoms.rank
 actions+=/variable,name=avoid_tea,value=energy>40+50+5*talent.vicious_venoms.rank
 actions+=/variable,name=cd_soon,value=cooldown.kingsbane.remains<6&!cooldown.kingsbane.ready
-actions+=/variable,name=not_pooling,value=variable.in_cooldowns|!variable.cd_soon&variable.avoid_tea&buff.darkest_night.up|!variable.cd_soon&variable.avoid_tea&variable.clip_envenom|energy.percent>variable.upper_limit_energy|fight_remains<=20
+actions+=/variable,name=not_pooling,value=variable.in_cooldowns|!variable.cd_soon&variable.avoid_tea&buff.darkest_night.up|!variable.cd_soon&variable.avoid_tea&variable.clip_envenom|energy.percent>=variable.upper_limit_energy|fight_remains<=20
 actions+=/call_action_list,name=stealthed,strict=1,if=stealthed.rogue|stealthed.improved_garrote|master_assassin_remains>0
 actions+=/call_action_list,name=cds
 actions+=/call_action_list,name=core_dot
