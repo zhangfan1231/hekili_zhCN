@@ -258,15 +258,14 @@ local stealth = {
     shadowmeld = { "shadowmeld" },
     sepsis = { "sepsis_buff" },
 
-    improved_garrote = { "improved_garrote", "sepsis_buff" },
+    improved_garrote = { "improved_garrote_aura", "improved_garrote", "sepsis_buff" },
 
     basic = { "stealth", "vanish" },
     mantle = { "stealth", "vanish" },
     rogue = { "stealth", "vanish", "subterfuge", "shadow_dance" },
     ambush = { "stealth", "vanish", "subterfuge", "shadow_dance", "sepsis_buff" },
 
-    -- SimC includes Improved Garrote in stealthed.all, but it feels misleading.
-    all = { "stealth", "vanish", "shadowmeld", "subterfuge", "shadow_dance", "sepsis_buff", "improved_garrote" },
+    all = { "stealth", "vanish", "shadowmeld", "subterfuge", "shadow_dance", "sepsis_buff", "improved_garrote_aura", "improved_garrote" },
 }
 
 
@@ -303,6 +302,11 @@ spec:RegisterStateExpr( "master_assassin_remains", function ()
     if stealthed.mantle then return cooldown.global_cooldown.remains + ( legendary.mark_of_the_master_assassin.enabled and 4 or 3 )
     elseif buff.master_assassin_any.up then return buff.master_assassin_any.remains end
     return 0
+end )
+
+spec:RegisterStateExpr( "indiscriminate_carnage_remains", function ()
+    if not talent.indiscriminate_carnage.enabled then return 0 end
+    return buff.indiscriminate_carnage_any.remains
 end )
 
 local stealth_dropped = 0
@@ -615,8 +619,8 @@ end )
 
 spec:RegisterStateExpr( "improved_garrote_remains", function()
     if buff.improved_garrote_buff.up then
-        if buff.shadow_dance.up then return buff.shadow_dance.remains end
-        return buff.improved_garrote_buff.remains
+        if buff.shadow_dance.up then return buff.shadow_dance.remains + spec.auras.improved_garrote.duration end
+        return buff.improved_garrote_any.remains
     end
     return 0
 end )
@@ -700,15 +704,15 @@ spec:RegisterHook( "reset_precast", function ()
     -- Pad Improved Garrote's expiry in order to avoid ruining your snapshot.
     if buff.improved_garrote.up then buff.improved_garrote.expires = buff.improved_garrote.expires - 0.05 end
 
-    if buff.indiscriminate_carnage.up then
-        if action.garrote.lastCast < action.indiscriminate_carnage.lastCast then applyBuff( "indiscriminate_carnage_garrote" ) end
-        if action.rupture.lastCast < action.indiscriminate_carnage.lastCast then applyBuff( "indiscriminate_carnage_rupture" ) end
-    end
-
     if not kingsbaneReady then
         rawset( buff, "kingsbane", buff.kingsbane_buff )
         rawset( debuff, "kingsbane", debuff.kingsbane_dot )
         kingsbaneReady = true
+    end
+
+    if talent.indiscriminate_carnage.enabled and buff.stealth.up then
+        applyBuff( "indiscriminate_carnage_aura", 3600 )
+        removeBuff( "indiscriminate_carnage" )
     end
 
     if talent.master_assassin.enabled and buff.stealth.up then
@@ -727,7 +731,13 @@ spec:RegisterHook( "runHandler", function( ability )
             applyBuff( "master_assassin" )
         end
 
+        if talent.improved_garrote.enabled then
+            removeBuff( "improved_garrote_aura" )
+            applyBuff( "improved_garrote" )
+        end
+
         if talent.indiscriminate_carnage.enabled then
+            removeBuff( "indiscriminate_carnage_aura" )
             applyBuff( "indiscriminate_carnage", ( 6 + 3 * talent.subterfuge.rank ) )
         end
 
@@ -742,10 +752,6 @@ spec:RegisterHook( "runHandler", function( ability )
         removeBuff( "stealth" )
         removeBuff( "shadowmeld" )
         removeBuff( "vanish" )
-
-        if buff.improved_garrote.up and buff.improved_garrote.remains > 6 then
-            buff.improved_garrote.expires = query_time + 5.95
-        end
     end
 
     if buff.cold_blood.up and ( ability == "envenom" or not talent.inevitable_end.enabled ) and ( not a or a.startsCombat ) then
@@ -1161,21 +1167,37 @@ spec:RegisterAuras( {
         id = 392401,
         duration = function() return combat and ( 6 + 3 * talent.subterfuge.rank ) or 3600 end,
         max_stack = 1,
-        copy = { 392403, "improved_garrote_aura", "improved_garrote_buff" }
+        copy = "improved_garrote_buff"
+    },
+    improved_garrote_aura = {
+        id = 392403,
+        duration = 3600,
+        max_stack = 1,
+    },
+    improved_garrote_any = {
+        alias = { "improved_garrote_aura", "improved_garrote" },
+        aliasMode = "longest",
+        aliasType = "buff",
+        duration = function() return combat and ( 6 + 3 * talent.subterfuge.rank ) or 3600 end,
+        max_stack = 1,
     },
     -- Talent: Your next Garrote and Rupture apply to $s1 nearby targets.
     -- https://wowhead.com/beta/spell=381802
     indiscriminate_carnage = {
         id = 381802,
-        duration = function() return combat and ( 6 + 3 * talent.subterfuge.rank ) or 3600 end,
+        duration = function() return 6 + 3 * talent.subterfuge.rank end,
         max_stack = 1,
-        copy = 385747
+        copy = { "indiscriminate_carnage_garrote", "indiscriminate_carnage_rupture" }
     },
-    indiscriminate_carnage_garrote = {
+    indiscriminate_carnage_aura = {
+        id = 385747,
         duration = 3600,
-        max_stack = 1
+        max_stack = 1,
     },
-    indiscriminate_carnage_rupture = {
+    indiscriminate_carnage_any = {
+        alias = { "indiscriminate_carnage_aura", "indiscriminate_carnage" },
+        aliasMode = "longest",
+        aliasType = "buff",
         duration = 3600,
         max_stack = 1
     },
@@ -2009,7 +2031,6 @@ spec:RegisterAbilities( {
             addStack( "envenom" )
             spend( combo_points.current, "combo_points" )
             removeStack( "supercharged_combo_points" )
-
         end,
     },
 
@@ -2107,13 +2128,8 @@ spec:RegisterAbilities( {
                 debuff.garrote_deathmark.pmultiplier = persistent_multiplier * ( buff.improved_garrote.up and 1.5 or 1 )
             end
 
-            if buff.indiscriminate_carnage_garrote.up then
-                active_dot.garrote = min( true_active_enemies, active_dot.garrote + 8 )
-                removeBuff( "indiscriminate_carnage_garrote" )
-                if buff.indiscriminate_carnage_rupture.down then
-                    removeBuff( "indiscriminate_carnage" )
-                    setCooldown( "indiscriminate_carnage", action.indiscriminate_carnage.cooldown )
-                end
+            if buff.indiscriminate_carnage_any.up then
+                active_dot.garrote = min( true_active_enemies, active_dot.garrote + 2 )
             end
 
             gain( action.garrote.cp_gain, "combo_points" )
@@ -2418,13 +2434,8 @@ spec:RegisterAbilities( {
                 debuff.rupture_deathmark.pmultiplier = persistent_multiplier
             end
 
-            if buff.indiscriminate_carnage_rupture.up then
-                active_dot.rupture = min( true_active_enemies, active_dot.rupture + 8 )
-                removeBuff( "indiscriminate_carnage_rupture" )
-                if buff.indiscriminate_carnage_garrote.down then
-                    removeBuff( "indiscriminate_carnage" )
-                    setCooldown( "indiscriminate_carnage", action.indiscriminate_carnage.cooldown )
-                end
+            if buff.indiscriminate_carnage_any.up then
+                active_dot.rupture = min( true_active_enemies, active_dot.rupture + 2 )
             end
 
             if buff.finality_rupture.up then removeBuff( "finality_rupture" )
