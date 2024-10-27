@@ -1129,6 +1129,10 @@ end, state )
 local TriggerERW = setfenv( function()
     gain( 1, "runes" )
     gain( 5, "runic_power" )
+end, state)
+
+local TriggerInflictionOfSorrow = setfenv( function ()
+    applyBuff( "infliction_of_sorrow" )
 end, state )
 
 me:RegisterHook( "reset_precast", function ()
@@ -1228,6 +1232,10 @@ me:RegisterHook( "reset_precast", function ()
             state:QueueAuraExpiration( "empower_rune_weapon", TriggerERW, expires )
             expires = expires - 5
         end
+    end
+
+    if talent.infliction_of_sorrow.enabled and buff.gift_of_the_sanlayn.up then
+        state:QueueAuraExpiration( "gift_of_the_sanlayn", TriggerInflictionOfSorrow, buff.gift_of_the_sanlayn.expires )
     end
 
     if Hekili.ActiveDebug then Hekili:Debug( "Pet is %s.", pet.alive and "alive" or "dead" ) end
@@ -1502,7 +1510,6 @@ me:RegisterAbilities( {
 
                 if talent.infliction_of_sorrow.enabled and dot.virulent_plague.ticking then
                     dot.virulent_plague.expires = dot.virulent_plague.expires + 3
-                    applyBuff( "infliction_of_sorrow" ) -- TODO: Apply on Gift of the San'layn expiry?
                 end
 
                 removeBuff( "vampiric_strike" )
