@@ -1154,11 +1154,6 @@ local TriggerUmbilicusEternus = setfenv( function()
     applyBuff( "umbilicus_eternus" )
 end, state )
 
-local TriggerERW = setfenv( function()
-    gain( 1, "runes" )
-    gain( 5, "runic_power" )
-end, state )
-
 local BonestormShield = setfenv( function()
     addStack( "bone_shield" )
 end, state )
@@ -1788,27 +1783,6 @@ spec:RegisterAbilities( {
                 if buff.bone_shield.up then applyBuff( "piledriver", nil, buff.bone_shield.stack )
                 else removeBuff( "piledriver" ) end
             end
-        end,
-    },
-
-    -- Talent: Empower your rune weapon, gaining $s3% Haste and generating $s1 $LRune:Runes; and ${$m2/10} Runic Power instantly and every $t1 sec for $d.  $?s137006[  If you already know $@spellname47568, instead gain $392714s1 additional $Lcharge:charges; of $@spellname47568.][]
-    empower_rune_weapon = {
-        id = 47568,
-        cast = 0,
-        cooldown = 120,
-        gcd = "off",
-
-        talent = "empower_rune_weapon",
-        startsCombat = false,
-
-        handler = function ()
-            applyBuff( "empower_rune_weapon" )
-            gain( 1, "runes" )
-            gain( 5, "runic_power" )
-            state:QueueAuraExpiration( "empower_rune_weapon", TriggerERW, query_time + 5 )
-            state:QueueAuraExpiration( "empower_rune_weapon", TriggerERW, query_time + 10 )
-            state:QueueAuraExpiration( "empower_rune_weapon", TriggerERW, query_time + 15 )
-            state:QueueAuraExpiration( "empower_rune_weapon", TriggerERW, query_time + 20 )
         end,
     },
 

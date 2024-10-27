@@ -1126,11 +1126,6 @@ local ExpireRunicCorruption = setfenv( function()
 end, state )
 
 
-local TriggerERW = setfenv( function()
-    gain( 1, "runes" )
-    gain( 5, "runic_power" )
-end, state)
-
 local TriggerInflictionOfSorrow = setfenv( function ()
     applyBuff( "infliction_of_sorrow" )
 end, state )
@@ -1222,15 +1217,6 @@ me:RegisterHook( "reset_precast", function ()
         local data = class.abilities[ action ]
         if data and data.cooldown == 0 and data.spendType == "runes" then
             setCooldown( action, 0 )
-        end
-    end
-
-    if buff.empower_rune_weapon.up then
-        local expires = buff.empower_rune_weapon.expires
-
-        while expires >= query_time do
-            state:QueueAuraExpiration( "empower_rune_weapon", TriggerERW, expires )
-            expires = expires - 5
         end
     end
 
@@ -1838,33 +1824,6 @@ me:RegisterAbilities( {
         end,
 
         bind = { "defile", "any_dnd" },
-    },
-
-    -- Talent: Empower your rune weapon, gaining $s3% Haste and generating $s1 $LRune:Runes;...
-    empower_rune_weapon = {
-        id = 47568,
-        cast = 0,
-        charges = function()
-            if spec.frost and talent.empower_rune_weapon.enabled then return 2 end
-        end,
-        cooldown = 120,
-        recharge = function()
-            if spec.frost and talent.empower_rune_weapon.enabled then return ( level > 55 and 105 or 120 ) end
-        end,
-        gcd = "off",
-
-        talent = "empower_rune_weapon",
-        startsCombat = false,
-
-        handler = function ()
-            applyBuff( "empower_rune_weapon" )
-            gain( 1, "runes" )
-            gain( 5, "runic_power" )
-            state:QueueAuraExpiration( "empower_rune_weapon", TriggerERW, query_time + 5 )
-            state:QueueAuraExpiration( "empower_rune_weapon", TriggerERW, query_time + 10 )
-            state:QueueAuraExpiration( "empower_rune_weapon", TriggerERW, query_time + 15 )
-            state:QueueAuraExpiration( "empower_rune_weapon", TriggerERW, query_time + 20 )
-        end,
     },
 
     -- Talent: Causes each of your Virulent Plagues to flare up, dealing $212739s1 Shadow da...
