@@ -542,7 +542,7 @@ me:RegisterAuras( {
     essence_of_the_blood_queen = {
         id = 433925,
         duration = 20.0,
-        max_stack = function() return 1 + ( talent.frenzied_bloodthirst.enabled and 2 or 0 ) end,
+        max_stack = function() return 5 + ( talent.frenzied_bloodthirst.enabled and 2 or 0 ) end,
     },
     festering_scythe = {
         id = 458123,
