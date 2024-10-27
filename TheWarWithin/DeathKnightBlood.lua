@@ -1146,6 +1146,9 @@ spec:RegisterGear( "uvanimor_the_unbeautiful", 137037 )
 
 spec:RegisterTotem( "ghoul", 1100170 ) -- Texture ID
 
+local TriggerInflictionOfSorrow = setfenv( function ()
+    applyBuff( "infliction_of_sorrow" )
+end, state )
 
 local TriggerUmbilicusEternus = setfenv( function()
     applyBuff( "umbilicus_eternus" )
@@ -1187,7 +1190,14 @@ spec:RegisterHook( "reset_precast", function ()
         state:QueueAuraExpiration( "vampiric_blood", TriggerUmbilicusEternus, buff.vampiric_blood.expires )
     end
 
-    if talent.vampiric_strike.enabled and IsActiveSpell( 433899 ) then applyBuff( "vampiric_strike" ) end
+    if talent.infliction_of_sorrow.enabled and buff.gift_of_the_sanlayn.up then
+        state:QueueAuraExpiration( "gift_of_the_sanlayn", TriggerInflictionOfSorrow, buff.gift_of_the_sanlayn.expires )
+    end
+
+    if IsActiveSpell( 433899 ) or IsActiveSpell( 433895 ) then
+        applyBuff( "vampiric_strike" )
+        class.abilities[ 433895 ] = class.abilities.heart_strike
+    end
 
     if buff.bonestorm.up then
         local tick_time = buff.bonestorm.expires
@@ -1821,7 +1831,8 @@ spec:RegisterAbilities( {
 
     -- Talent: Instantly strike the target and 1 other nearby enemy, causing $s2 Physical damage, and reducing enemies' movement speed by $s5% for $d$?s316575[    |cFFFFFFFFGenerates $s3 bonus Runic Power][]$?s221536[, plus ${$210738s1/10} Runic Power per additional enemy struck][].|r
     heart_strike = {
-        id = 206930,
+        id = function () return ( buff.vampiric_strike.up or buff.gift_of_the_sanlayn.up ) and 433895 or 206930 end,
+        known = 206930,
         cast = 0,
         cooldown = 0,
         gcd = "spell",
@@ -1830,32 +1841,29 @@ spec:RegisterAbilities( {
         spendType = "runes",
 
         talent = "heart_strike",
+        texture = function () return ( buff.vampiric_strike.up or buff.gift_of_the_sanlayn.up ) and 5927645 or 135675 end,
         startsCombat = true,
-        nobuff = "vampiric_strike",
-
-        bind = "vampiric_strike",
 
         max_targets = function () return buff.death_and_decay.up and talent.cleaving_strikes.enabled and 5 or 2 end,
 
         handler = function ()
-            if buff.killing_machine.up  then removeStack( "killing_machine" ) end
-
-            applyDebuff( "target", "heart_strike" )
-            active_dot.heart_strike = min( true_active_enemies, active_dot.heart_strike + action.heart_strike.max_targets )
-
-            if buff.vampiric_strength.up then buff.vampiric_strength.expires = buff.vampiric_strength.expires + 0.5 end
-
             if talent.heartbreaker.enabled then
                 gain( 2 * min( action.heart_strike.max_targets, true_active_enemies - 1 ) + ( 3 * buff.dancing_rune_weapon.stack ), "runic_power" )
             end
 
-            if buff.ashen_decay_proc.up then
-                applyDebuff( "target", "ashen_decay" )
-                removeBuff( "ashen_decay_proc" )
-            end
+            if buff.vampiric_strike.up or buff.gift_of_the_sanlayn.up then
+                gain( 0.01 * health.max, "health" )
+                applyBuff( "essence_of_the_blood_queen" ) -- TODO: mod haste
 
-            if debuff.ashen_decay.up and set_bonus.tier31_4pc > 0 then -- TODO: Check if refresh is before reapplication.
-                debuff.ashen_decay.expires = debuff.ashen_decay.expires + 1
+                if talent.infliction_of_sorrow.enabled and dot.blood_plague.ticking then
+                    dot.blood_plague.expires = dot.blood_plague.expires + 3
+                end
+
+                removeBuff( "vampiric_strike" )
+            else
+                applyDebuff( "target", "heart_strike" )
+                active_dot.heart_strike = min( true_active_enemies, active_dot.heart_strike + action.heart_strike.max_targets )
+
             end
 
             if buff.infliction_of_sorrow.up then
@@ -1867,13 +1875,26 @@ spec:RegisterAbilities( {
                 health.current = health.current - 0.03 * health.max
             end
 
+            if buff.vampiric_strength.up then buff.vampiric_strength.expires = buff.vampiric_strength.expires + 0.5 end
+
+            if buff.ashen_decay_proc.up then
+                applyDebuff( "target", "ashen_decay" )
+                removeBuff( "ashen_decay_proc" )
+            end
+
+            if debuff.ashen_decay.up and set_bonus.tier31_4pc > 0 then -- TODO: Check if refresh is before reapplication.
+                debuff.ashen_decay.expires = debuff.ashen_decay.expires + 1
+            end
+
             if azerite.deep_cuts.enabled then applyDebuff( "target", "deep_cuts" ) end
 
             if legendary.gorefiends_domination.enabled and cooldown.vampiric_blood.remains > 0 then
                 gainChargeTime( "vampiric_blood", 2 )
             end
-
         end,
+
+        bind = "vampiric_strike",
+        copy = { 206930, "vampiric_strike", 433895 }
     },
 
     -- Talent: Your blood freezes, granting immunity to Stun effects and reducing all damage you take by $s3% for $d.
@@ -2261,33 +2282,6 @@ spec:RegisterAbilities( {
             if set_bonus.tier30_4pc > 0 then applyBuff( "vampiric_strength" ) end
             if legendary.gorefiends_domination.enabled then gain( 45, "runic_power" ) end
             if talent.umbilicus_eternus.enabled then state:QueueAuraExpiration( "vampiric_blood", TriggerUmbilicusEternus, buff.vampiric_blood.expires ) end
-        end,
-    },
-
-    vampiric_strike = {
-        id = 433895,
-        flash = 206930,
-        cast = 0.0,
-        cooldown = 0.0,
-        gcd = "spell",
-
-        spend = 1,
-        spendType = 'runes',
-
-        startsCombat = true,
-        buff = "vampiric_strike",
-
-        bind = "heart_strike",
-
-        handler = function ()
-            gain( 0.01 * health.max, "health" )
-            removeBuff( "vampiric_strike" )
-            applyBuff( "essence_of_the_blood_queen" ) -- TODO: mod haste
-
-            if talent.infliction_of_sorrow.enabled and dot.blood_plague.ticking then
-                dot.blood_plague.expires = dot.blood_plague.expires + 3
-                applyBuff( "infliction_of_sorrow")
-            end
         end,
     },
 
