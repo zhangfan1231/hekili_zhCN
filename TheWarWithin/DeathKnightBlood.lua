@@ -1191,7 +1191,6 @@ spec:RegisterHook( "reset_precast", function ()
 
     if IsActiveSpell( 433899 ) or IsActiveSpell( 433895 ) then
         applyBuff( "vampiric_strike" )
-        class.abilities[ 433895 ] = class.abilities.heart_strike
     end
 
     if buff.bonestorm.up then
