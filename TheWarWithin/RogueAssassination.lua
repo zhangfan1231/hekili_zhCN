@@ -1332,7 +1332,7 @@ spec:RegisterAuras( {
     -- https://wowhead.com/beta/spell=360826
     rupture = {
         id = 1943,
-        duration = function () return ( 4 * ( 1 + effective_combo_points ) ) + talent.corrupt_the_blood.enabled and 3 or 0 end,
+        duration = function () return ( 4 * ( 1 + effective_combo_points ) ) + ( talent.corrupt_the_blood.enabled and 3 or 0 ) end,
         tick_time = function() return 2 * haste end,
         mechanic = "bleed",
         max_stack = 1,
@@ -1648,6 +1648,18 @@ spec:RegisterAuras( {
     }
 } )
 
+
+local BoneSpikes = setfenv( function( ruptureTargets )
+
+    -- Determine max number of spendable spike charges and spend them
+    local boneSpikeTargets = min( true_active_enemies, buff.serrated_bone_spike_charges.stack, ruptureTargets )
+    removeStack( "serrated_bone_spike_charges", nil, boneSpikeTargets )
+    -- Debuff to primary target, then calculate gains, then increment active dot counter. Don't ask me why, ask Blizzard.
+    applyDebuff( "target", "serrated_bone_spike_dot" )
+    gain ( ruptureTargets * ( boneSpikeTargets + active_dot.serrated_bone_spike_dot ), "combo_points" )
+    if boneSpikeTargets > 1 then active_dot.serrated_bone_spike_dot = min ( true_active_enemies, active_dot.serrated_bone_spike_dot + ( boneSpikeTargets - 1 ) ) end
+
+end, state )
 
 -- Abilities
 spec:RegisterAbilities( {
@@ -2421,11 +2433,9 @@ spec:RegisterAbilities( {
         end,
 
         handler = function ()
-
             --- Shared functionality
-            removeBuff( "masterful_finish" )
-            applyDebuff( "target", "rupture" )
             debuff.rupture.pmultiplier = persistent_multiplier
+            applyDebuff( "target", "rupture" )
 
             if debuff.deathmark.up then
                 applyDebuff( "target", "rupture_deathmark" )
@@ -2436,27 +2446,17 @@ spec:RegisterAbilities( {
             if talent.supercharger.enabled then removeStack( "supercharged_combo_points" ) end
 
             --- Assassination Rogue specific
-
             if talent.scent_of_blood.enabled or azerite.scent_of_blood.enabled then
                 applyBuff( "scent_of_blood", dot.rupture.remains, active_dot.rupture )
             end
 
-            if buff.indiscriminate_carnage_any.up then
-                active_dot.rupture = min( true_active_enemies, active_dot.rupture + 2 )
-            end
-
-            if buff.serrated_bone_spike_charges.up then
-                for i = 1, buff.indiscriminate_carnage_any.up and 3 or 1 do
-                    gain ( 1 + buff.serrated_bone_spike_charges.stack, "combo_points" )
-                    removeStack( "serrated_bone_spike_charges" )
-                end
-                applyDebuff( "target", "serrated_bone_spike_dot" )
-                if buff.indiscriminate_carnage_any.up then active_dot.serrated_bone_spike_dot = min ( true_active_enemies, active_dot.serrated_bone_spike_dot + 2 ) end
-            end
+            local ruptureTargets = min( true_active_enemies, buff.indiscriminate_carnage_any.up and 3 or 1 )
+            active_dot.rupture = min( true_active_enemies, ( ruptureTargets - 1 ) ) -- Primary target is already handle, so -1
+            if buff.serrated_bone_spike_charges.up then BoneSpikes( ruptureTargets ) end
 
             --- Subtlety Rogue specific
-
-            if spec.id == 261 then
+            if state.spec.subtlety then
+                if buff.masterful_finish.up then removeBuff( "masterful_finish" ) end
                 if buff.finality_rupture.up then removeBuff( "finality_rupture" )
                 elseif talent.finality.enabled then applyBuff( "finality_rupture" ) end
                 removeStack( "goremaws_bite" )
