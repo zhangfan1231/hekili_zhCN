@@ -2446,13 +2446,13 @@ spec:RegisterAbilities( {
             if talent.supercharger.enabled then removeStack( "supercharged_combo_points" ) end
 
             --- Assassination Rogue specific
-            if talent.scent_of_blood.enabled or azerite.scent_of_blood.enabled then
-                applyBuff( "scent_of_blood", dot.rupture.remains, active_dot.rupture )
-            end
-
             local ruptureTargets = min( true_active_enemies, buff.indiscriminate_carnage_any.up and 3 or 1 )
             active_dot.rupture = min( true_active_enemies, ( ruptureTargets - 1 ) ) -- Primary target is already handle, so -1
             if buff.serrated_bone_spike_charges.up then BoneSpikes( ruptureTargets ) end
+
+            if talent.scent_of_blood.enabled or azerite.scent_of_blood.enabled then
+                applyBuff( "scent_of_blood", dot.rupture.remains, active_dot.rupture )
+            end
 
             --- Subtlety Rogue specific
             if state.spec.subtlety then
