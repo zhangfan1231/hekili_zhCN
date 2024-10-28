@@ -1065,16 +1065,6 @@ spec:RegisterAbilities( {
                 end
             end
 
-            if talent.frostfire_mastery.enabled then
-                if buff.excess_frost.up then
-                    removeBuff( "excess_frost" )
-                    spec.abilities.ice_nova.handler()
-                    reduceCooldown( "comet_storm", 5 )
-                end
-
-                if buff.frost_mastery.up and buff.frost_mastery.stacks == 5 then applyBuff( "excess_frost" ) end
-            end
-
             applyDebuff( "target", "flurry" )
             addStack( "icicles" )
             if talent.glacial_spike.enabled and buff.icicles.stack == buff.icicles.max_stack then
@@ -1089,11 +1079,6 @@ spec:RegisterAbilities( {
             Hekili:Debug( "Winter's Chill applied by Flurry." )
             applyDebuff( "target", "winters_chill", nil, 2 )
             applyDebuff( "target", "flurry" )
-            applyBuff( "bone_chilling", nil, 3 )
-            if talent.frostfire_mastery.enabled then 
-                if buff.frost_mastery.up then applyBuff( "frost_mastery", buff.frost_mastery.expires, min( buff.frost_mastery.stacks + 3, 6) )
-                else applyBuff( "frost_mastery", nil, 3 ) end
-            end
         end,
 
         copy = 228354 -- ID of the Flurry impact.
@@ -1327,6 +1312,11 @@ spec:RegisterAbilities( {
         handler = function ()
             applyDebuff( "target", "chilled" )
 
+            if buff.excess_frost.up then
+                applyDebuff( "target", "living_bomb" )
+                removeBuff( "excess_frost" )
+            end
+
             if buff.fingers_of_frost.up or debuff.frozen.up then
                 if talent.chain_reaction.enabled then addStack( "chain_reaction" ) end
                 if talent.thermal_void.enabled and buff.icy_veins.up then
@@ -1349,22 +1339,11 @@ spec:RegisterAbilities( {
             end
         end,
 
-
-
         impact = function ()
             if ( buff.fingers_of_frost.up or debuff.frozen.up ) and talent.hailstones.enabled then
                 addStack( "icicles" )
                 if talent.glacial_spike.enabled and buff.icicles.stack == buff.icicles.max_stack then
                     applyBuff( "glacial_spike_usable" )
-                end
-            end
-
-            if talent.frostfire_mastery.enabled then
-                if buff.excess_fire.up then
-                    removeBuff( "excess_fire" )
-                    applyBuff( "brain_freeze" )
-                    if talent.perpetual_winter.enabled then gainCharges( "flurry", 1 ) else setCooldown( "flurry", 0 ) end
-                    if buff.frost_mastery.up and buff.frost_mastery.stacks == 5 then applyBuff( "excess_frost" ) end
                 end
             end
 
@@ -1431,13 +1410,18 @@ spec:RegisterAbilities( {
 
             if talent.bone_chilling.enabled then addStack( "bone_chilling" ) end
             if talent.cryopathy.enabled then addStack( "cryopathy", nil, 10 ) end
-
-            if talent.flash_freezeburn.enabled then applyBuff( "frostfire_empowerment" ) end
+           -- if talent.rune_of_power.enabled then applyBuff( "rune_of_power" ) end
 
             if pvptalent.ice_form.enabled then applyBuff( "ice_form" )
             else
                 if buff.icy_veins.down then stat.haste = stat.haste + 0.30 end
                 applyBuff( "icy_veins" )
+
+               --[[ if talent.snap_freeze.enabled then
+                    if talent.flurry.enabled then gainCharges( "flurry", 1 ) end
+                    addStack( "brain_freeze" )
+                    addStack( "fingers_of_frost" )
+                end --]]
             end
 
             if azerite.frigid_grasp.enabled then
