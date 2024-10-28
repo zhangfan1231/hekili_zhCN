@@ -2437,15 +2437,15 @@ spec:RegisterAbilities( {
             debuff.rupture.pmultiplier = persistent_multiplier
             applyDebuff( "target", "rupture" )
 
-            if debuff.deathmark.up then
-                applyDebuff( "target", "rupture_deathmark" )
-                debuff.rupture_deathmark.pmultiplier = persistent_multiplier
-            end
-
             spend( combo_points.current, "combo_points" )
             if talent.supercharger.enabled then removeStack( "supercharged_combo_points" ) end
 
             --- Assassination Rogue specific
+            if debuff.deathmark.up then
+                applyDebuff( "target", "rupture_deathmark" )
+                debuff.rupture_deathmark.pmultiplier = persistent_multiplier
+            end
+            
             local ruptureTargets = min( true_active_enemies, buff.indiscriminate_carnage_any.up and 3 or 1 )
             active_dot.rupture = min( true_active_enemies, active_dot.rupture + ( ruptureTargets - 1 ) ) -- Primary target is already handle, so -1
             if buff.serrated_bone_spike_charges.up then BoneSpikes( ruptureTargets ) end
