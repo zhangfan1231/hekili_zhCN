@@ -735,11 +735,7 @@ spec:RegisterHook( "runHandler", function( ability )
 
         if talent.indiscriminate_carnage.enabled then
             removeBuff( "indiscriminate_carnage_aura" )
-<<<<<<< Updated upstream
-            applyBuff( "indiscriminate_carnage", ( 6 + 3 * talent.subterfuge.rank ) )
-=======
             applyBuff( "indiscriminate_carnage" )
->>>>>>> Stashed changes
         end
 
         if legendary.mark_of_the_master_assassin.enabled and stealthed.mantle then
@@ -752,14 +748,8 @@ spec:RegisterHook( "runHandler", function( ability )
             if talent.subterfuge.enabled then applyBuff( "subterfuge" ) end
         end
 
-<<<<<<< Updated upstream
-        removeBuff( "stealth" )
-        removeBuff( "shadowmeld" )
-        removeBuff( "vanish" )
-=======
         if buff.shadowmeld.up then removeBuff( "shadowmeld" ) end
         if buff.vanish.up then removeBuff( "vanish" ) end
->>>>>>> Stashed changes
     end
 
     if buff.cold_blood.up and ( ability == "envenom" or not talent.inevitable_end.enabled ) and ( not a or a.startsCombat ) then
@@ -1192,21 +1182,13 @@ spec:RegisterAuras( {
     -- Talent: Your next Garrote and Rupture apply to $s1 nearby targets.
     -- https://wowhead.com/beta/spell=381802
     indiscriminate_carnage = {
-<<<<<<< Updated upstream
-        id = 381802,
-=======
         id = 385747,
->>>>>>> Stashed changes
         duration = function() return 6 + 3 * talent.subterfuge.rank end,
         max_stack = 1,
         copy = { "indiscriminate_carnage_garrote", "indiscriminate_carnage_rupture" }
     },
     indiscriminate_carnage_aura = {
-<<<<<<< Updated upstream
-        id = 385747,
-=======
         id = 385754,
->>>>>>> Stashed changes
         duration = 3600,
         max_stack = 1,
     },
