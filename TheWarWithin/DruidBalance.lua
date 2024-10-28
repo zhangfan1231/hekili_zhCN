@@ -2465,10 +2465,7 @@ spec:RegisterAbilities( {
         spend = function () return talent.moon_guardian.enabled and -8 or -6 end,
         spendType = "astral_power",
 
-        usable = function () 
-            if talent.treants_of_the_moon.enabled and pet.treants.remains then return false end
-            return true
-        end,
+        readyTime = function () if state.spec.balance and talent.treants_of_the_moon.enabled then return pet.treants.remains end end,
 
         startsCombat = true,
 
