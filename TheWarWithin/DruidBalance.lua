@@ -1710,6 +1710,22 @@ local SinfulHysteriaHandler = setfenv( function ()
     applyBuff( "ravenous_frenzy_sinful_hysteria" )
 end, state )
 
+
+spec:RegisterPet( "treants",
+    103822,
+    "force_of_nature",
+    10,
+    103822 )
+
+spec:RegisterTotem( "treants", 103822 )
+
+local TreantMoonfires = setfenv( function()
+    for i = 1, 3 do -- # of treants
+        spec.abilities.moonfire.handler()
+    end
+end, state )
+
+
 spec:RegisterHook( "reset_precast", function ()
     if IsActiveSpell( class.abilities.new_moon.id ) then active_moon = "new_moon"
     elseif IsActiveSpell( class.abilities.half_moon.id ) then active_moon = "half_moon"
@@ -1724,6 +1740,19 @@ spec:RegisterHook( "reset_precast", function ()
         rawset( cooldown, "ca_inc", cooldown.celestial_alignment )
         rawset( buff, "ca_inc", buff.celestial_alignment )
     end
+
+
+    --[[ Needs more work
+    if pet.treants.up then
+        local tick, expires = action.force_of_nature.lastCast, pet.treants.expires
+		local tick2 = tick + 6
+		tick = tick + 2
+            if tick > query_time and tick < expires then
+                state:QueueAuraEvent( "treant_moonfires", TreantMoonfires, tick, "AURA_TICK" )
+            end
+        end
+    end
+    --]]
 
     if talent.fungal_growth.enabled and query_time - action.wild_mushroom.lastCast < 1 then
         if debuff.fungal_growth.up then debuff.fungal_growth.expires = action.wild_mushroom.lastCast + 7
@@ -2092,8 +2121,10 @@ spec:RegisterAbilities( {
         handler = function ()
             summonPet( "treants", 10 )
             if talent.harmony_of_the_grove.enabled then applyBuff( "harmony_of_the_grove" ) end
-            addStack( "dream_burst", nil, spec.auras.dream_burst.max_stack )
+            if talent.dream_surge.enabled then applyBuff( "dream_burst") end
             -- queue aura ticks +2, +8 3 moonfires, actually triggers the handler
+            state:QueueAuraEvent( "treant_moonfires", TreantMoonfires, query_time + 2, "AURA_TICK" )
+            state:QueueAuraEvent( "treant_moonfires", TreantMoonfires, query_time + 8, "AURA_TICK" )
         end,
     },
 
@@ -2431,8 +2462,10 @@ spec:RegisterAbilities( {
         gcd = "spell",
         school = "arcane",
 
-        spend = function() return talent.moon_guardian.enabled and -8 or -6 end,
+        spend = function () return talent.moon_guardian.enabled and -8 or -6 end,
         spendType = "astral_power",
+
+        usable = function () return ( talent.treants_of_the_moon.enabled and pet.treants.alive and false ) or true end,
 
         startsCombat = true,
 

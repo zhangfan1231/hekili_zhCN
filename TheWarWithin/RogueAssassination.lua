@@ -521,15 +521,12 @@ spec:RegisterHook( "spend", function( amt, resource )
         end
 
         if amt > 4 and debuff.deathstalkers_mark.up then
-            if debuff.deathstalkers_mark.stack > 1 then debuff.deathstalkers_mark.stack = debuff.deathstalkers_mark.stack - 1
-            else
-                removeDebuff( "deathstalkers_mark" )
-                if talent.darkest_night.enabled then
+            removeDebuffStack( "target", "deathstalkers_mark" )
+            if debuff.deathstalkers_mark.down and talent.darkest_night.enabled then
                     gain( 40, "energy" )
                     applyBuff( "darkest_night" )
                 end
-            end
-            addStack( "deathstalkers_mark_buff" )
+            applyBuff( "deathstalkers_mark_buff" )
         end
     end
 end )
@@ -738,7 +735,11 @@ spec:RegisterHook( "runHandler", function( ability )
 
         if talent.indiscriminate_carnage.enabled then
             removeBuff( "indiscriminate_carnage_aura" )
+<<<<<<< Updated upstream
             applyBuff( "indiscriminate_carnage", ( 6 + 3 * talent.subterfuge.rank ) )
+=======
+            applyBuff( "indiscriminate_carnage" )
+>>>>>>> Stashed changes
         end
 
         if legendary.mark_of_the_master_assassin.enabled and stealthed.mantle then
@@ -747,11 +748,18 @@ spec:RegisterHook( "runHandler", function( ability )
 
         if buff.stealth.up then
             setCooldown( "stealth", 2 )
+            removeBuff( "stealth" )
+            if talent.subterfuge.enabled then applyBuff( "subterfuge" ) end
         end
 
+<<<<<<< Updated upstream
         removeBuff( "stealth" )
         removeBuff( "shadowmeld" )
         removeBuff( "vanish" )
+=======
+        if buff.shadowmeld.up then removeBuff( "shadowmeld" ) end
+        if buff.vanish.up then removeBuff( "vanish" ) end
+>>>>>>> Stashed changes
     end
 
     if buff.cold_blood.up and ( ability == "envenom" or not talent.inevitable_end.enabled ) and ( not a or a.startsCombat ) then
@@ -1184,13 +1192,21 @@ spec:RegisterAuras( {
     -- Talent: Your next Garrote and Rupture apply to $s1 nearby targets.
     -- https://wowhead.com/beta/spell=381802
     indiscriminate_carnage = {
+<<<<<<< Updated upstream
         id = 381802,
+=======
+        id = 385747,
+>>>>>>> Stashed changes
         duration = function() return 6 + 3 * talent.subterfuge.rank end,
         max_stack = 1,
         copy = { "indiscriminate_carnage_garrote", "indiscriminate_carnage_rupture" }
     },
     indiscriminate_carnage_aura = {
+<<<<<<< Updated upstream
         id = 385747,
+=======
+        id = 385754,
+>>>>>>> Stashed changes
         duration = 3600,
         max_stack = 1,
     },
@@ -2423,6 +2439,9 @@ spec:RegisterAbilities( {
         end,
 
         handler = function ()
+
+            local ruptureTargets = min ( buff.indiscriminate_carnage_rupture.up and 3 or 1, true_active_enemies)
+
             removeStack( "goremaws_bite" )
             removeBuff( "masterful_finish" )
 
@@ -2441,19 +2460,20 @@ spec:RegisterAbilities( {
             if buff.finality_rupture.up then removeBuff( "finality_rupture" )
             elseif talent.finality.enabled then applyBuff( "finality_rupture" ) end
 
-
-
             if talent.scent_of_blood.enabled or azerite.scent_of_blood.enabled then
                 applyBuff( "scent_of_blood", dot.rupture.remains, active_dot.rupture )
             end
 
             spend( combo_points.current, "combo_points" )
-            removeStack( "supercharged_combo_points" )
+            if talent.supercharger.enabled then removeStack( "supercharged_combo_points" ) end
 
             if buff.serrated_bone_spike_charges.up then
+                for i = 1, ruptureTargets do
                 gain ( 1 + buff.serrated_bone_spike_charges.stack, "combo_points" )
                 removeStack( "serrated_bone_spike_charges" )
                 applyDebuff( "target", "serrated_bone_spike_dot" )
+                if ruptureTargets == 3 then active_dot.serrated_bone_spike_dot = min ( true_active_enemies, active_dot.serrated_bone_spike_dot + 2 ) end
+                end
             end
         end,
     },
