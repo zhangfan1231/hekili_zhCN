@@ -1332,7 +1332,7 @@ spec:RegisterAuras( {
     -- https://wowhead.com/beta/spell=360826
     rupture = {
         id = 1943,
-        duration = function () return 4 * ( 1 + effective_combo_points ) end,
+        duration = function () return ( 4 * ( 1 + effective_combo_points ) ) + talent.corrupt_the_blood.enabled and 3 or 0 end,
         tick_time = function() return 2 * haste end,
         mechanic = "bleed",
         max_stack = 1,
@@ -2422,9 +2422,8 @@ spec:RegisterAbilities( {
 
         handler = function ()
 
-            removeStack( "goremaws_bite" )
+            --- Shared functionality
             removeBuff( "masterful_finish" )
-
             applyDebuff( "target", "rupture" )
             debuff.rupture.pmultiplier = persistent_multiplier
 
@@ -2433,19 +2432,18 @@ spec:RegisterAbilities( {
                 debuff.rupture_deathmark.pmultiplier = persistent_multiplier
             end
 
-            if buff.indiscriminate_carnage_any.up then
-                active_dot.rupture = min( true_active_enemies, active_dot.rupture + 2 )
-            end
+            spend( combo_points.current, "combo_points" )
+            if talent.supercharger.enabled then removeStack( "supercharged_combo_points" ) end
 
-            if buff.finality_rupture.up then removeBuff( "finality_rupture" )
-            elseif talent.finality.enabled then applyBuff( "finality_rupture" ) end
+            --- Assassination Rogue specific
 
             if talent.scent_of_blood.enabled or azerite.scent_of_blood.enabled then
                 applyBuff( "scent_of_blood", dot.rupture.remains, active_dot.rupture )
             end
 
-            spend( combo_points.current, "combo_points" )
-            if talent.supercharger.enabled then removeStack( "supercharged_combo_points" ) end
+            if buff.indiscriminate_carnage_any.up then
+                active_dot.rupture = min( true_active_enemies, active_dot.rupture + 2 )
+            end
 
             if buff.serrated_bone_spike_charges.up then
                 for i = 1, buff.indiscriminate_carnage_any.up and 3 or 1 do
@@ -2455,6 +2453,15 @@ spec:RegisterAbilities( {
                 applyDebuff( "target", "serrated_bone_spike_dot" )
                 if buff.indiscriminate_carnage_any.up then active_dot.serrated_bone_spike_dot = min ( true_active_enemies, active_dot.serrated_bone_spike_dot + 2 ) end
             end
+
+            --- Subtlety Rogue specific
+
+            if spec.id == 261 then
+                if buff.finality_rupture.up then removeBuff( "finality_rupture" )
+                elseif talent.finality.enabled then applyBuff( "finality_rupture" ) end
+                removeStack( "goremaws_bite" )
+            end
+
         end,
     },
 
@@ -2504,34 +2511,6 @@ spec:RegisterAbilities( {
 
         copy = { 385408, 328305 }
     },
-
-    --[[ Talent: Embed a bone spike in the target, dealing 1,696 Physical damage and 141 Bleed damage every 2.8 sec until they die or leave combat. Refunds a charge when target dies. Awards 1 combo point plus 1 additional per active bone spike.
-    serrated_bone_spike = {
-        id = function() return talent.serrated_bone_spike.enabled and 385424 or 328547 end,
-        cast = 0,
-        charges = function () return legendary.deathspike.equipped and 5 or 3 end,
-        cooldown = 30,
-        recharge = 30,
-        gcd = "totem",
-        school = "physical",
-
-        spend = 15,
-        spendType = "energy",
-
-        startsCombat = true,
-        cycle = "serrated_bone_spike",
-
-        cp_gain = function () return ( buff.broadside.up and 1 or 0 ) + active_dot.serrated_bone_spike end,
-
-        handler = function ()
-            applyDebuff( "target", "serrated_bone_spike" )
-            debuff.serrated_bone_spike.exsanguinated_rate = 1
-            gain( action.serrated_bone_spike.cp_gain, "combo_points" )
-            if soulbind.kevins_oozeling.enabled then applyBuff( "kevins_oozeling" ) end
-        end,
-
-        copy = { 385424, 328547 }
-    }, ]]
 
     -- Step through the shadows to appear behind your target and gain 70% increased movement speed for 2 sec. If you already know Shadowstep, instead gain 1 additional charge of Shadowstep.
     shadowstep = {
