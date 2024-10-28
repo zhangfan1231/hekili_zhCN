@@ -2422,8 +2422,6 @@ spec:RegisterAbilities( {
 
         handler = function ()
 
-            local ruptureTargets = min ( buff.indiscriminate_carnage_rupture.up and 3 or 1, true_active_enemies)
-
             removeStack( "goremaws_bite" )
             removeBuff( "masterful_finish" )
 
@@ -2450,12 +2448,12 @@ spec:RegisterAbilities( {
             if talent.supercharger.enabled then removeStack( "supercharged_combo_points" ) end
 
             if buff.serrated_bone_spike_charges.up then
-                for i = 1, ruptureTargets do
-                gain ( 1 + buff.serrated_bone_spike_charges.stack, "combo_points" )
-                removeStack( "serrated_bone_spike_charges" )
-                applyDebuff( "target", "serrated_bone_spike_dot" )
-                if ruptureTargets == 3 then active_dot.serrated_bone_spike_dot = min ( true_active_enemies, active_dot.serrated_bone_spike_dot + 2 ) end
+                for i = 1, buff.indiscriminate_carnage_any.up and 3 or 1 do
+                    gain ( 1 + buff.serrated_bone_spike_charges.stack, "combo_points" )
+                    removeStack( "serrated_bone_spike_charges" )
                 end
+                applyDebuff( "target", "serrated_bone_spike_dot" )
+                if buff.indiscriminate_carnage_any.up then active_dot.serrated_bone_spike_dot = min ( true_active_enemies, active_dot.serrated_bone_spike_dot + 2 ) end
             end
         end,
     },
