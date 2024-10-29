@@ -1651,13 +1651,40 @@ spec:RegisterAuras( {
 
 local BoneSpikes = setfenv( function( ruptureTargets )
 
-    -- Determine max number of spendable spike charges and spend them
-    local boneSpikeTargets = min( true_active_enemies, buff.serrated_bone_spike_charges.stack, ruptureTargets )
+    -- Locals
+    local maxEnemies = true_active_enemies
+    local boneSpikeTargets = min( maxEnemies, buff.serrated_bone_spike_charges.stack, ruptureTargets ) -- Maximum spendable stacks for this cast
+    local spikeComboPoints = 0 -- precalculate all passive/background ones
     removeStack( "serrated_bone_spike_charges", nil, boneSpikeTargets )
-    -- Debuff to primary target, then calculate gains, then increment active dot counter. Don't ask me why, ask Blizzard.
-    applyDebuff( "target", "serrated_bone_spike_dot" )
-    gain ( ruptureTargets * ( boneSpikeTargets + active_dot.serrated_bone_spike_dot ), "combo_points" )
-    if boneSpikeTargets > 1 then active_dot.serrated_bone_spike_dot = min ( true_active_enemies, active_dot.serrated_bone_spike_dot + ( boneSpikeTargets - 1 ) ) end
+
+    -- Primary target
+    if debuff.serrated_bone_spike_dot.down then applyDebuff( "target", "serrated_bone_spike_dot" ) end
+    local embeddedSpikes = active_dot.serrated_bone_spike_dot
+    spikeComboPoints = spikeComboPoints + 1 + embeddedSpikes
+    boneSpikeTargets = boneSpikeTargets - 1
+
+    -- Calculate this part first in case we overflow, save calculations
+    spikeComboPoints = spikeComboPoints + embeddedSpikes * boneSpikeTargets
+
+    -- Additional targets if there are any eligible stacks left to spend
+    for i = 1, boneSpikeTargets do
+        if spikeComboPoints >= 7 then -- max 7 combo points, don't waste time calculating more
+            break
+        end
+
+        -- If it's realistic to spread this stack to a new enemy, only gain 1 and increment the dots, otherwise gain 2 with no increment
+        if embeddedSpikes < maxEnemies then
+            spikeComboPoints = spikeComboPoints + 1
+            embeddedSpikes = embeddedSpikes + 1
+        else spikeComboPoints = spikeComboPoints + 2 end
+
+    end
+
+    -- Increment real dot counter now that we are doing the repetive calculations /w local variables
+    active_dot.serrated_bone_spike_dot = min(maxEnemies, embeddedSpikes)
+
+    -- Gain the points
+    gain( spikeComboPoints, "combo_points" )
 
 end, state )
 
