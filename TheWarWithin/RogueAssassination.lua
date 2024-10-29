@@ -1379,7 +1379,7 @@ spec:RegisterAuras( {
     scent_of_blood = {
         id = 394080,
         duration = 24,
-        max_stack = 24
+        max_stack = 20
     },
     -- Talent: Suffering $w1 Nature damage every $t1 sec, and $394026s1 when the poison ends.
     -- https://wowhead.com/beta/spell=385408
@@ -1651,13 +1651,41 @@ spec:RegisterAuras( {
 
 local BoneSpikes = setfenv( function( ruptureTargets )
 
-    -- Determine max number of spendable spike charges and spend them
-    local boneSpikeTargets = min( true_active_enemies, buff.serrated_bone_spike_charges.stack, ruptureTargets )
+    -- Locals / setup
+    local maxEnemies = true_active_enemies
+    local boneSpikeTargets = min( maxEnemies, buff.serrated_bone_spike_charges.stack, ruptureTargets ) -- Maximum spendable stacks for this cast
+    local spikeComboPoints = 0
     removeStack( "serrated_bone_spike_charges", nil, boneSpikeTargets )
-    -- Debuff to primary target, then calculate gains, then increment active dot counter. Don't ask me why, ask Blizzard.
-    applyDebuff( "target", "serrated_bone_spike_dot" )
-    gain ( ruptureTargets * ( boneSpikeTargets + active_dot.serrated_bone_spike_dot ), "combo_points" )
-    if boneSpikeTargets > 1 then active_dot.serrated_bone_spike_dot = min ( true_active_enemies, active_dot.serrated_bone_spike_dot + ( boneSpikeTargets - 1 ) ) end
+
+    -- Primary target
+    if debuff.serrated_bone_spike_dot.down then applyDebuff( "target", "serrated_bone_spike_dot" ) end
+    local embeddedSpikes = active_dot.serrated_bone_spike_dot
+    spikeComboPoints = spikeComboPoints + 1 + embeddedSpikes
+    boneSpikeTargets = boneSpikeTargets - 1
+
+    -- Calculate this part of additional targets first in case we overflow, save calculations by breaking loop early
+    spikeComboPoints = spikeComboPoints + ( embeddedSpikes * boneSpikeTargets )
+
+    local loopBreak = combo_points.max
+    -- Additional targets if there are any eligible stacks left to spend
+    for i = 1, boneSpikeTargets do
+        -- max 7 combo points, don't waste time calculating more
+        if spikeComboPoints >= loopBreak then
+            break
+        end
+        -- If it's realistic to spread this stack to a new enemy, only gain 1 and increment the dots, otherwise gain 2 with no increment
+        if embeddedSpikes < maxEnemies then
+            spikeComboPoints = spikeComboPoints + 1
+            embeddedSpikes = embeddedSpikes + 1
+        else spikeComboPoints = spikeComboPoints + 2 end
+
+    end
+
+    -- Increment real dot counter now that we are finised with the repetitive calculations /w local variables
+    active_dot.serrated_bone_spike_dot = min(maxEnemies, embeddedSpikes)
+
+    -- Gain the points
+    gain( spikeComboPoints, "combo_points" )
 
 end, state )
 
@@ -2447,11 +2475,11 @@ spec:RegisterAbilities( {
             end
             
             local ruptureTargets = min( true_active_enemies, buff.indiscriminate_carnage_any.up and 3 or 1 )
-            active_dot.rupture = min( true_active_enemies, active_dot.rupture + ( ruptureTargets - 1 ) ) -- Primary target is already handle, so -1
+            if ruptureTargets > 1 then active_dot.rupture = min( true_active_enemies, active_dot.rupture + ( ruptureTargets - 1 ) ) end -- Primary target is already handle, so -1
             if buff.serrated_bone_spike_charges.up then BoneSpikes( ruptureTargets ) end
 
             if talent.scent_of_blood.enabled or azerite.scent_of_blood.enabled then
-                applyBuff( "scent_of_blood", dot.rupture.remains, active_dot.rupture )
+                applyBuff( "scent_of_blood", dot.rupture.remains, active_dot.rupture * ( 2 * talent.scent_of_blood.rank ) )
             end
 
             --- Subtlety Rogue specific
