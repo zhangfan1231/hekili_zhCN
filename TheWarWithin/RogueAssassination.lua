@@ -1681,7 +1681,7 @@ local BoneSpikes = setfenv( function( ruptureTargets )
 
     end
 
-    -- Increment real dot counter now that we are doing the repetive calculations /w local variables
+    -- Increment real dot counter now that we are finised with the repetitive calculations /w local variables
     active_dot.serrated_bone_spike_dot = min(maxEnemies, embeddedSpikes)
 
     -- Gain the points
