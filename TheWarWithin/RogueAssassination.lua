@@ -1379,7 +1379,7 @@ spec:RegisterAuras( {
     scent_of_blood = {
         id = 394080,
         duration = 24,
-        max_stack = 24
+        max_stack = 20
     },
     -- Talent: Suffering $w1 Nature damage every $t1 sec, and $394026s1 when the poison ends.
     -- https://wowhead.com/beta/spell=385408
@@ -2475,11 +2475,11 @@ spec:RegisterAbilities( {
             end
             
             local ruptureTargets = min( true_active_enemies, buff.indiscriminate_carnage_any.up and 3 or 1 )
-            active_dot.rupture = min( true_active_enemies, active_dot.rupture + ( ruptureTargets - 1 ) ) -- Primary target is already handle, so -1
+            if ruptureTargets > 1 then active_dot.rupture = min( true_active_enemies, active_dot.rupture + ( ruptureTargets - 1 ) ) end -- Primary target is already handle, so -1
             if buff.serrated_bone_spike_charges.up then BoneSpikes( ruptureTargets ) end
 
             if talent.scent_of_blood.enabled or azerite.scent_of_blood.enabled then
-                applyBuff( "scent_of_blood", dot.rupture.remains, active_dot.rupture )
+                applyBuff( "scent_of_blood", dot.rupture.remains, active_dot.rupture * ( 2 * talent.scent_of_blood.rank ) )
             end
 
             --- Subtlety Rogue specific
