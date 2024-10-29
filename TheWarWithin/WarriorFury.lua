@@ -784,6 +784,11 @@ spec:RegisterHook( "reset_precast", function ()
             active_dot.marked_for_execution = active_dot.marked_for_execution + 1
         end
     end
+
+    -- Will need to revisit this if `cancel_buff` is added to the APL.
+    if buff.bladestorm.up then
+        channelSpell( "bladestorm", buff.bladestorm.expires - class.auras.bladestorm.duration, class.auras.bladestorm.duration, class.abilities.bladestorm.id )
+    end
 end )
 
 
