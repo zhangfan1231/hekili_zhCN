@@ -1651,10 +1651,10 @@ spec:RegisterAuras( {
 
 local BoneSpikes = setfenv( function( ruptureTargets )
 
-    -- Locals
+    -- Locals / setup
     local maxEnemies = true_active_enemies
     local boneSpikeTargets = min( maxEnemies, buff.serrated_bone_spike_charges.stack, ruptureTargets ) -- Maximum spendable stacks for this cast
-    local spikeComboPoints = 0 -- precalculate all passive/background ones
+    local spikeComboPoints = 0
     removeStack( "serrated_bone_spike_charges", nil, boneSpikeTargets )
 
     -- Primary target
@@ -1663,15 +1663,16 @@ local BoneSpikes = setfenv( function( ruptureTargets )
     spikeComboPoints = spikeComboPoints + 1 + embeddedSpikes
     boneSpikeTargets = boneSpikeTargets - 1
 
-    -- Calculate this part first in case we overflow, save calculations
-    spikeComboPoints = spikeComboPoints + embeddedSpikes * boneSpikeTargets
+    -- Calculate this part of additional targets first in case we overflow, save calculations by breaking loop early
+    spikeComboPoints = spikeComboPoints + ( embeddedSpikes * boneSpikeTargets )
 
+    local loopBreak = combo_points.max
     -- Additional targets if there are any eligible stacks left to spend
     for i = 1, boneSpikeTargets do
-        if spikeComboPoints >= 7 then -- max 7 combo points, don't waste time calculating more
+        -- max 7 combo points, don't waste time calculating more
+        if spikeComboPoints >= loopBreak then
             break
         end
-
         -- If it's realistic to spread this stack to a new enemy, only gain 1 and increment the dots, otherwise gain 2 with no increment
         if embeddedSpikes < maxEnemies then
             spikeComboPoints = spikeComboPoints + 1
