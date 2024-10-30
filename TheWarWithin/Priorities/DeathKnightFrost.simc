@@ -50,7 +50,7 @@ actions.aoe+=/arcane_torrent,if=runic_power.deficit>25
 
 # Breath Active Rotation
 actions.breath+=/obliterate,cycle_targets=1,if=buff.killing_machine.stack=2
-actions.obliteration+=/soul_reaper,if=fight_remains>5&target.time_to_pct_35<5&target.time_to_pct_0>5&runic_power>50
+actions.breath+=/soul_reaper,if=fight_remains>5&target.time_to_pct_35<5&target.time_to_pct_0>5&runic_power>50
 actions.breath+=/howling_blast,if=(variable.rime_buffs|!buff.killing_machine.up&buff.pillar_of_frost.up&talent.obliteration&!buff.bonegrinder_frost.up)&runic_power>(variable.breath_rime_rp_threshold-(talent.rage_of_the_frozen_champion*6))|!dot.frost_fever.ticking
 actions.breath+=/horn_of_winter,if=rune<2&runic_power.deficit>30&(!buff.empower_rune_weapon.up|runic_power<variable.breath_rp_cost*2*gcd.max)
 actions.breath+=/obliterate,cycle_targets=1,if=buff.killing_machine.up|runic_power.deficit>20
