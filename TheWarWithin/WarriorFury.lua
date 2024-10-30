@@ -787,7 +787,8 @@ spec:RegisterHook( "reset_precast", function ()
 
     -- Will need to revisit this if `cancel_buff` is added to the APL.
     if buff.bladestorm.up then
-        channelSpell( "bladestorm", buff.bladestorm.expires - class.auras.bladestorm.duration, class.auras.bladestorm.duration, class.abilities.bladestorm.id )
+        -- channelSpell( "bladestorm", buff.bladestorm.expires - class.auras.bladestorm.duration, class.auras.bladestorm.duration, class.abilities.bladestorm.id )
+        setCooldown( "bladestorm", buff.bladestorm.remains )
     end
 end )
 
