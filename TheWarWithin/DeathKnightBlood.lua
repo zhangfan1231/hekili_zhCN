@@ -1196,10 +1196,11 @@ spec:RegisterHook( "reset_precast", function ()
     if buff.bonestorm.up then
         local tick_time = buff.bonestorm.expires
         state:QueueAuraExpiration( "bonestorm", BonestormShield, tick_time )
+        tick_time = tick_time - 1
 
         while( tick_time > query_time ) do
+            state:QueueAuraEvent( "bonestorm", BonestormShield, tick_time, "AURA_TICK" )
             tick_time = tick_time - 1
-            state:QueueAuraExpiration( "bonestorm", BonestormShield, tick_time, "AURA_TICK" )
         end
     end
 end )
