@@ -11,6 +11,7 @@ local GetUnitChargedPowerPoints = GetUnitChargedPowerPoints
 local format, wipe, max = string.format, table.wipe, math.max
 local UA_GetPlayerAuraBySpellID = C_UnitAuras.GetPlayerAuraBySpellID
 
+
 local orderedPairs = ns.orderedPairs
 
 local spec = Hekili:NewSpecialization( 259 )
@@ -531,6 +532,10 @@ spec:RegisterHook( "spend", function( amt, resource )
     end
 end )
 
+spec:RegisterStateExpr( "poisonChance", function ()
+
+    return ( 0.3 + ( talent.destiny_defined.enabled and 0.05 or 0 ) + ( talent.improved_poisons.enabled and 0.05 or 0 ) ) * ( talent.dragontempered_blades.enabled and 0.7 or 1 )
+end )
 
 spec:RegisterStateExpr( "persistent_multiplier", function ()
     if not this_action then return 1 end
@@ -2096,24 +2101,29 @@ spec:RegisterAbilities( {
         cooldown = 0,
         gcd = "totem",
         school = "physical",
-
+        crit_percent_current = function() return crit + ( 0.05 * talent.deadly_precision.rank ) + ( buff.momentum_of_despair.up and 0.15 or 0 ) + ( 0.1 * talent.thrown_precision.rank ) + ( buff.master_assassin_any.up and 0.2 or 0 ) end,
         spend = 35,
         spendType = "energy",
 
         startsCombat = true,
         cycle = function () return buff.deadly_poison.up and "deadly_poison_dot" or buff.amplifying_poison.up and "amplifying_poison_dot" or nil end,
 
+        cp_gain = function() return ( buff.clear_the_witnesses.up and 2 or 1 ) + floor( true_active_enemies * crit_percent_current ) end,
+
         handler = function ()
-            gain( buff.clear_the_witnesses.up and 2 or 1, "combo_points" )
+            gain( action.fan_of_knives.cp_gain, "combo_points" )
             removeBuff( "hidden_blades" )
             removeBuff( "clear_the_witnesses" )
 
+            local newPoisons = floor( poisonChance * true_active_enemies )
+
             if buff.deadly_poison.up then
                 applyDebuff( "target", "deadly_poison_dot" )
-                active_dot.deadly_poison_dot = min( active_enemies, active_dot.deadly_poison_dot + 8 )
-            elseif buff.amplifying_poison.up then
+                active_dot.deadly_poison_dot = min( active_enemies, active_dot.deadly_poison_dot + newPoisons )
+            end
+            if buff.amplifying_poison.up then
                 applyDebuff( "target", "amplifying_poison_dot" )
-                active_dot.amplifying_poison_dot = min( active_enemies, active_dot.amplifying_poison_dot + 8 )
+                active_dot.amplifying_poison_dot = min( active_enemies, active_dot.deadly_poison_dot + newPoisons )
             end
         end,
     },
