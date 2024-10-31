@@ -2101,14 +2101,23 @@ spec:RegisterAbilities( {
         cooldown = 0,
         gcd = "totem",
         school = "physical",
-        crit_percent_current = function() return crit + ( 0.05 * talent.deadly_precision.rank ) + ( buff.momentum_of_despair.up and 0.15 or 0 ) + ( 0.1 * talent.thrown_precision.rank ) + ( buff.master_assassin_any.up and 0.2 or 0 ) end,
         spend = 35,
         spendType = "energy",
 
         startsCombat = true,
         cycle = function () return buff.deadly_poison.up and "deadly_poison_dot" or buff.amplifying_poison.up and "amplifying_poison_dot" or nil end,
 
-        cp_gain = function() return ( buff.clear_the_witnesses.up and 2 or 1 ) + floor( true_active_enemies * crit_percent_current ) end,
+        cp_gain = function()
+            local fanCP = buff.clear_the_witnesses.up and 2 or 1
+            
+            -- Predict crit gains
+            if talent.seal_fate.enabled then
+                local fanCrit = 0.01 * ( crit_pct_current + ( talent.deadly_precision.enabled and 5 or 0 ) + ( talent.thrown_precision.enabled and 5 or 0 ) + ( buff.momentum_of_despair.up and 10 or 0 ) + ( buff.master_assassin_any.up and 20 or 0 ) )
+                fanCP = fanCP + floor( active_enemies * fanCrit )
+            end
+
+            return fanCP
+        end,
 
         handler = function ()
             gain( action.fan_of_knives.cp_gain, "combo_points" )
