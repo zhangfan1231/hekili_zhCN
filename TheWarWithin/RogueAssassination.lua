@@ -532,7 +532,7 @@ spec:RegisterHook( "spend", function( amt, resource )
     end
 end )
 
-spec:RegisterStateExpr( "poisonChance", function ()
+spec:RegisterStateExpr( "poison_chance", function ()
 
     return ( 0.3 + ( talent.destiny_defined.enabled and 0.05 or 0 ) + ( talent.improved_poisons.enabled and 0.05 or 0 ) ) * ( talent.dragontempered_blades.enabled and 0.7 or 1 )
 end )
@@ -2112,8 +2112,8 @@ spec:RegisterAbilities( {
             
             -- Predict crit gains
             if talent.seal_fate.enabled then
-                local fanCrit = 0.01 * ( crit_pct_current + ( talent.deadly_precision.enabled and 5 or 0 ) + ( talent.thrown_precision.enabled and 5 or 0 ) + ( buff.momentum_of_despair.up and 10 or 0 ) + ( buff.master_assassin_any.up and 20 or 0 ) )
-                fanCP = fanCP + floor( active_enemies * fanCrit )
+                -- calculate the crit chance of Fan of Knives then estimate 
+                fanCP = fanCP + floor( action.fan_of_knives.spell_targets * ( 0.01 * ( crit_pct_current + ( talent.deadly_precision.enabled and 5 or 0 ) + ( talent.thrown_precision.enabled and 5 or 0 ) + ( buff.momentum_of_despair.up and 10 or 0 ) + ( buff.master_assassin_any.up and 20 or 0 ) ) ) )
             end
 
             return fanCP
@@ -2124,7 +2124,7 @@ spec:RegisterAbilities( {
             removeBuff( "hidden_blades" )
             removeBuff( "clear_the_witnesses" )
 
-            local newPoisons = floor( poisonChance * true_active_enemies )
+            local newPoisons = floor( poison_chance * action.fan_of_knives.spell_targets )
 
             if buff.deadly_poison.up then
                 applyDebuff( "target", "deadly_poison_dot" )
