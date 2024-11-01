@@ -952,9 +952,7 @@ spec:RegisterAbilities( {
         end,
 
         handler = function ()
-            if talent.alacrity.enabled and effective_combo_points > 4 then
-                addStack( "alacrity" )
-            end
+            if talent.alacrity.rank > 1 and effective_combo_points > 9 then addStack( "alacrity" ) end
 
             applyBuff( "between_the_eyes" )
 
@@ -1081,9 +1079,8 @@ spec:RegisterAbilities( {
         handler = function ()
             removeBuff( "brutal_opportunist" )
 
-            if talent.alacrity.enabled and combo_points.current > 4 then
-                addStack( "alacrity" )
-            end
+            if talent.alacrity.rank > 1 and effective_combo_points > 9 then addStack( "alacrity" ) end
+
             if talent.summarily_dispatched.enabled and combo_points.current > 5 then
                 addStack( "summarily_dispatched", ( buff.summarily_dispatched.up and buff.summarily_dispatched.remains or nil ), 1 )
             end
