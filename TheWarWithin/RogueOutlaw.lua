@@ -912,6 +912,11 @@ spec:RegisterAbilities( {
                 state:QueueAuraExpiration( "adrenaline_rush", ExpireAdrenalineRush, buff.adrenaline_rush.remains )
             end
 
+            if talent.edge_case.enabled then
+                addStack( "fatebound_coin_heads" )
+                addStack( "fatebound_coin_tails" )
+            end
+
             energy.regen = energy.regen * 1.6
             energy.max = energy.max + 50
             forecastResources( "energy" )
@@ -936,14 +941,13 @@ spec:RegisterAbilities( {
         gcd = "totem",
         school = "physical",
 
-        spend = function() return talent.tight_spender.enabled and 22.5 or 25 end,
+        spend = function() return 25 * ( talent.tight_spender.enabled and 0.94 or 1 ) end,
         spendType = "energy",
 
         startsCombat = true,
         texture = 135610,
 
         usable = function()
-            -- if settings.crackshot_lock and talent.crackshot.enabled and not stealthed.all then return false, "userpref requires stealth" end
             return combo_points.current > 0, "requires combo points"
         end,
 
@@ -953,6 +957,10 @@ spec:RegisterAbilities( {
             end
 
             applyBuff( "between_the_eyes" )
+
+            if stealthed.rogue and talent.crachshot.enabled then
+                spec.abilities.dispatch.handler()
+            end
 
             if set_bonus.tier30_4pc > 0 and ( debuff.soulrip.up or active_dot.soulrip > 0 ) then
                 removeDebuff( "target", "soulrip" )
@@ -1066,7 +1074,7 @@ spec:RegisterAbilities( {
         gcd = "totem",
         school = "physical",
 
-        spend = function() return ( talent.tight_spender.enabled and 31.5 or 35 ) - 5 * ( buff.summarily_dispatched.up and buff.summarily_dispatched.stack or 0 ) end,
+        spend = function() return 35 * ( talent.tight_spender.enabled and 0.94 or 1 ) - 5 * ( buff.summarily_dispatched.up and buff.summarily_dispatched.stack or 0 ) end,
         spendType = "energy",
 
         startsCombat = true,
@@ -1074,7 +1082,6 @@ spec:RegisterAbilities( {
         usable = function() return combo_points.current > 0, "requires combo points" end,
         handler = function ()
             removeBuff( "brutal_opportunist" )
-            removeBuff( "storm_of_steel" )
 
             if talent.alacrity.enabled and combo_points.current > 4 then
                 addStack( "alacrity" )
@@ -1115,7 +1122,7 @@ spec:RegisterAbilities( {
         talent = "ghostly_strike",
         startsCombat = true,
 
-        cp_gain = function () return buff.shadow_blades.up and combo_points.max or ( 1 + ( buff.broadside.up and 1 or 0 ) ) end,
+        cp_gain = function () return  1 + ( buff.broadside.up and 1 or 0 ) end,
 
         handler = function ()
             applyDebuff( "target", "ghostly_strike" )
@@ -1324,11 +1331,6 @@ spec:RegisterAbilities( {
         texture = 136189,
 
         cp_gain = function () return 1 + ( buff.broadside.up and 1 or 0 ) end,
-
-        -- 20220604 Outlaw priority spreads bleeds from the trinket.
-        cycle = function ()
-            if buff.acquired_axe_driver.up and debuff.vicious_wound.up then return "vicious_wound" end
-        end,
 
         handler = function ()
             gain( action.sinister_strike.cp_gain, "combo_points" )
