@@ -616,7 +616,7 @@ spec:RegisterHook( "spend", function( amt, resource )
             applyBuff( "deathstalkers_mark_buff" )
         end
 
-        if talent.alacrity.enabled and effective_combo_points >= 10 then addStack( "alacrity" ) end
+        if talent.alacrity.enabled and ( 5 * talent.alacrity.rank ) + ( 20 * effective_combo_points ) >= 100 then addStack( "alacrity" ) end
         if talent.secret_technique.enabled then reduceCooldown( "secret_technique", amt ) end
         if talent.deepening_shadows.enabled then reduceCooldown( "shadow_dance", amt * effective_combo_points ) end
         if talent.supercharger.enabled and buff.supercharged_combo_points.up then removeStack( "supercharged_combo_points" ) end
