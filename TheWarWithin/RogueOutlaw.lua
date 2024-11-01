@@ -1072,7 +1072,7 @@ spec:RegisterAbilities( {
         gcd = "totem",
         school = "physical",
 
-        spend = function() return 35 * ( talent.tight_spender.enabled and 0.94 or 1 ) - 5 * ( buff.summarily_dispatched.up and buff.summarily_dispatched.stack ) end,
+        spend = function() return 35 * ( talent.tight_spender.enabled and 0.94 or 1 ) - ( 5 * buff.summarily_dispatched.stack ) end,
         spendType = "energy",
 
         startsCombat = true,
