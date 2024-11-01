@@ -452,17 +452,17 @@ spec:RegisterAuras( {
         duration = 10.0,
         max_stack = 1,
     },
+    demonic_art_mother_of_chaos = {
+        id = 432794,
+        duration = 60,
+        max_stack = 1,
+        copy = { "demonic_art_mother", "art_mother" }
+    },
     demonic_art_overlord = {
         id = 428524,
         duration = 60,
         max_stack = 1,
         copy = "art_overlord",
-    },
-    demonic_art_mother_of_chaos = {
-        id = 432794,
-        duration = 60,
-        max_stack = 1,
-        copy = "art_mother",
     },
     demonic_art_pit_lord = {
         id = 432795,
