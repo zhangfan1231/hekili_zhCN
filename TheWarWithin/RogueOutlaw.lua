@@ -261,6 +261,11 @@ spec:RegisterAuras( {
         duration = 3600,
         max_stack = 1
     },
+    echoing_reprimand = {
+        id = 470671,
+        duration = 30,
+        max_stack = 1
+    },
     escalating_blade = {
         id = 441786,
         duration = 3600,
@@ -990,7 +995,6 @@ spec:RegisterAbilities( {
             if talent.deft_maneuvers.enabled then gain( action.blade_flurry.cp_gain, "combo_points" ) end
             if talent.underhanded_upper_hand.enabled then
                 if buff.adrenaline_rush.up then buff.blade_flurry.expires = buff.blade_flurry.expires + buff.adrenaline_rush.remains end
-                if buff.slice_and_dice.up then buff.slice_and_dice.expires = buff.slice_and_dice.expires + buff.blade_flurry.remains end
             end
         end,
     },
@@ -1079,15 +1083,19 @@ spec:RegisterAbilities( {
                 addStack( "summarily_dispatched", ( buff.summarily_dispatched.up and buff.summarily_dispatched.remains or nil ), 1 )
             end
 
-            if set_bonus.tier29_2pc > 0 then applyBuff( "vicious_followup" ) end
-
-            spend( combo_points.current, "combo_points" )
-            removeStack( "supercharged_combo_points" )
-
             if buff.coup_de_grace.up then
                 if debuff.fazed.up then addStack( "flawless_form", nil, 5 ) end
                 removeBuff( "coup_de_grace" )
             end
+
+            if buff.slice_and_dice.up then
+                buff.slice_and_dice.expires = buff.slice_and_dice.expires + combo_points.current * 3
+            else applyBuff( "slice_and_dice", combo_points.current * 3 ) end
+
+            if set_bonus.tier29_2pc > 0 then applyBuff( "vicious_followup" ) end
+
+            spend( combo_points.current, "combo_points" )
+            removeStack( "supercharged_combo_points" )
         end,
 
         copy = { 2098, "coup_de_grace", 441776 }
@@ -1315,10 +1323,7 @@ spec:RegisterAbilities( {
         startsCombat = true,
         texture = 136189,
 
-        cp_gain = function ()
-            if buff.shadow_blades.up then return 7 end
-            return 1 + ( buff.broadside.up and 1 or 0 )
-        end,
+        cp_gain = function () return 1 + ( buff.broadside.up and 1 or 0 ) end,
 
         -- 20220604 Outlaw priority spreads bleeds from the trinket.
         cycle = function ()
@@ -1339,6 +1344,9 @@ spec:RegisterAbilities( {
                     addStack( "escalating_blade" )
                 end
             end
+
+            if talent.echoing_reprimand.enabled then removeBuff( "echoing_reprimand" ) end
+
         end,
 
         copy = 1752,
@@ -1498,6 +1506,16 @@ spec:RegisterSetting( "allow_shadowmeld", false, {
     set = function ( _, val )
         Hekili.DB.profile.specs[ 260 ].abilities.shadowmeld.disabled = not val
     end,
+} )
+
+spec:RegisterSetting( "vanish_charges_reserved", 0, {
+    name = strformat( "Reserve %s Charges", Hekili:GetSpellLinkWithTexture( 1856 ) ),
+    desc = strformat( "If set above zero, %s will not be recommended if it would leave you with fewer (fractional) charges.", Hekili:GetSpellLinkWithTexture( 1856 ) ),
+    type = "range",
+    min = 0,
+    max = 2,
+    step = 0.1,
+    width = "full"
 } )
 
 spec:RegisterSetting( "solo_vanish", true, {
