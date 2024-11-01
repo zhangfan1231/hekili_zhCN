@@ -1066,6 +1066,10 @@ spec:RegisterAbilities( {
 
             if set_bonus.tier29_2pc > 0 then applyBuff( "honed_blades", nil, effective_combo_points ) end
 
+            if buff.slice_and_dice.up then
+                buff.slice_and_dice.expires = buff.slice_and_dice.expires + combo_points.current * 3
+            else applyBuff( "slice_and_dice", combo_points.current * 3 ) end
+
             spend( combo_points.current, "combo_points" )
             removeStack( "supercharged_combo_points" )
 
@@ -1558,13 +1562,22 @@ spec:RegisterSetting( "rupture_duration", 12, {
     width = "full",
 } )
 
+spec:RegisterSetting( "vanish_charges_reserved", 0, {
+    name = strformat( "Reserve %s Charges", Hekili:GetSpellLinkWithTexture( 1856 ) ),
+    desc = strformat( "If set above zero, %s will not be recommended if it would leave you with fewer (fractional) charges.", Hekili:GetSpellLinkWithTexture( 1856 ) ),
+    type = "range",
+    min = 0,
+    max = 2,
+    step = 0.1,
+    width = "full"
+} )
+
 spec:RegisterSetting( "solo_vanish", true, {
     name = "Allow |T132331:0|t Vanish when Solo",
     desc = "If unchecked, the addon will not recommend |T132331:0|t Vanish when you are alone (to avoid resetting combat).",
     type = "toggle",
     width = "full"
 } )
-
 
 spec:RegisterSetting( "allow_shadowmeld", nil, {
     name = "Allow |T132089:0|t Shadowmeld",
