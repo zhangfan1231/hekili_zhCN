@@ -591,7 +591,7 @@ spec:RegisterStateExpr( "effective_combo_points", function ()
 
     if c > 0 and buff.supercharged_combo_points.up then
         c = c + ( talent.forced_induction.enabled and 3 or 2 )
-    end -- todo: Find out if these stack like this or not? coup de gace and supercharge
+    end
 
     if talent.coup_de_grace.enabled and this_action == "coup_de_grace" and buff.coup_de_grace.up then c = c + 5 end
     return c
@@ -602,10 +602,11 @@ end )
 spec:RegisterGear( "cinidaria_the_symbiote", 133976 )
 spec:RegisterGear( "denial_of_the_halfgiants", 137100 )
 
-local function comboSpender( amt, resource )
+spec:RegisterHook( "spend", function( amt, resource )
     if resource == "combo_points" then
-        if amt > 0 then
-            gain( 6 * amt, "energy" )
+
+        if talent.relentless_strikes.enabled and amt > 0 then
+            gain( 5 * amt, "energy" )
         end
 
         if talent.alacrity.enabled and amt >= 10 then
@@ -621,10 +622,10 @@ local function comboSpender( amt, resource )
         if legendary.obedience.enabled and buff.flagellation_buff.up then
             reduceCooldown( "flagellation", amt )
         end
-    end
-end
 
-spec:RegisterHook( "spend", comboSpender )
+    end
+end )
+
 
 local function st_gain( token )
     local amount = action[ token ].cp_gain
@@ -878,9 +879,8 @@ spec:RegisterAbilities( {
         notalent = "gloomblade",
 
         cp_gain = function ()
-            if buff.shadow_blades.up then return 7 end
-            if buff.premeditation.up then return combo_points.max end
-            return 1
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
+            else return 1 end
         end,
 
         used_for_danse = function()
@@ -948,7 +948,7 @@ spec:RegisterAbilities( {
         handler = function ()
             removeBuff( "masterful_finish" )
 
-            if talent.alacrity.enabled and effective_combo_points > 4 then addStack( "alacrity" ) end
+            if talent.alacrity.enabled and effective_combo_points > 9 then addStack( "alacrity" ) end
 
             if buff.finality_black_powder.up then removeBuff( "finality_black_powder" )
             elseif talent.finality.enabled then applyBuff( "finality_black_powder" ) end
@@ -956,7 +956,7 @@ spec:RegisterAbilities( {
             if set_bonus.tier29_2pc > 0 then applyBuff( "honed_blades", nil, effective_combo_points ) end
 
             spend( combo_points.current, "combo_points" )
-            removeStack( "supercharged_combo_points" )
+            
             if talent.deeper_daggers.enabled or conduit.deeper_daggers.enabled then applyBuff( "deeper_daggers" ) end
         end,
     },
@@ -984,9 +984,8 @@ spec:RegisterAbilities( {
         end,
 
         cp_gain = function()
-            if buff.shadow_blades.up then return 7 end
-            if buff.premeditation.up then return combo_points.max end
-            return 1 + ( talent.seal_fate.enabled and ( buff.cold_blood.up or buff.the_rotten.up ) and 1 or 0 )
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
+            else return 1 end
         end,
 
         handler = function ()
@@ -1000,40 +999,6 @@ spec:RegisterAbilities( {
             if buff.cold_blood.up then removeBuff( "cold_blood" )
             elseif buff.the_rotten.up then removeStack( "the_rotten" ) end
         end,
-    },
-
-    -- Talent: Deal $s1 Arcane damage to an enemy, extracting their anima to Animacharge a combo point for $323558d.    Damaging finishing moves that consume the same number of combo points as your Animacharge function as if they consumed $s2 combo points.    |cFFFFFFFFAwards $s3 combo $lpoint:points;.|r
-    echoing_reprimand = {
-        id = 323547,
-        cast = 0,
-        cooldown = 45,
-        gcd = "totem",
-        school = "arcane",
-
-        spend = 10,
-        spendType = "energy",
-
-        startsCombat = true,
-        toggle = "cooldowns",
-
-        usable = function() return covenant.kyrian end,
-
-        cp_gain = function ()
-            if buff.shadow_blades.up then return 7 end
-            if buff.premeditation.up then return combo_points.max end
-            return 2 + ( buff.broadside.up and 1 or 0 ) + ( talent.seal_fate.enabled and ( buff.cold_blood.up or buff.the_rotten.up ) and 1 or 0 )
-        end,
-
-        handler = function ()
-            -- Can't predict the Animacharge, unless you have the talent/legendary.
-
-            st_gain( "echoing_reprimand" )
-            removeBuff( "premeditation" )
-
-            if buff.the_rotten.up then removeStack( "the_rotten" ) end
-        end,
-
-        copy = { 385616, 323547 },
     },
 
     -- Finishing move that disembowels the target, causing damage per combo point. Targets with Find Weakness suffer an additional 20% damage as Shadow. 1 point : 273 damage 2 points: 546 damage 3 points: 818 damage 4 points: 1,091 damage 5 points: 1,363 damage 6 points: 1,636 damage
@@ -1067,7 +1032,7 @@ spec:RegisterAbilities( {
                 removeBuff( "coup_de_grace" )
             end
 
-            if talent.alacrity.enabled and combo_points.current > 4 then
+            if talent.alacrity.enabled and effective_combo_points > 9 then
                 addStack( "alacrity" )
             end
             removeBuff( "nights_vengeance" )
@@ -1132,7 +1097,6 @@ spec:RegisterAbilities( {
         school = "shadow",
 
         spend = function ()
-            if buff.goremaws_bite.up then return 0 end
             return 40 * ( ( talent.shadow_focus.enabled and ( buff.shadow_dance.up or buff.stealth.up ) ) and 0.95 or 1 )
         end,
         spendType = "energy",
@@ -1141,9 +1105,8 @@ spec:RegisterAbilities( {
         startsCombat = true,
 
         cp_gain = function()
-            if buff.shadow_blades.up then return 7 end
-            if buff.premeditation.up then return combo_points.max end
-            return 1 + ( talent.seal_fate.enabled and ( buff.cold_blood.up or buff.the_rotten.up ) and 1 or 0 )
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
+            else return 1 end
         end,
 
         handler = function ()
@@ -1171,9 +1134,8 @@ spec:RegisterAbilities( {
         startsCombat = true,
 
         cp_gain = function()
-            if buff.shadow_blades.up then return 7 end
-            if buff.premeditation.up then return combo_points.max end
-            return 3 + ( talent.seal_fate.enabled and ( buff.cold_blood.up or buff.the_rotten.up ) and 1 or 0 )
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
+            else return 3 end
         end,
 
         handler = function()
@@ -1218,8 +1180,8 @@ spec:RegisterAbilities( {
         handler = function ()
             applyBuff( "secret_technique" ) -- fake buff for APL logic.
             removeStack( "goremaws_bite" )
-            if talent.alacrity.enabled and combo_points.current > 4 then addStack( "alacrity" ) end
-            spend( min( talent.deeper_stratagem.enabled and 6 or 5, combo_points.current ), "combo_points" )
+            if talent.alacrity.enabled and effective_combo_points > 9 then addStack( "alacrity" ) end
+            spend( combo_points.current, "combo_points" )
         end,
     },
 
@@ -1293,7 +1255,6 @@ spec:RegisterAbilities( {
         school = "physical",
 
         spend = function ()
-            if buff.goremaws_bite.up then return 0 end
             return ( 45 - ( azerite.blade_in_the_shadows.enabled and 2 or 0 ) ) * ( ( talent.shadow_focus.enabled and ( buff.shadow_dance.up or buff.stealth.up ) ) and 0.95 or 1 )
         end,
         spendType = "energy",
@@ -1302,9 +1263,8 @@ spec:RegisterAbilities( {
         cycle = function () return talent.find_weakness.enabled and "find_weakness" or nil end,
 
         cp_gain = function ()
-            if buff.shadow_blades.up then return 7 end
-            if buff.premeditation.up then return combo_points.max end
-            return 2 + ( talent.improved_ambush.enabled and 1 or 0 ) + ( buff.broadside.up and 1 or 0 )
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
+            else return 2 + ( talent.improved_ambush.enabled and 1 or 0 ) end
         end,
 
         usable = function () return stealthed.all or buff.sepsis_buff.up, "requires stealth or sepsis_buff" end,
@@ -1370,9 +1330,8 @@ spec:RegisterAbilities( {
         startsCombat = true,
 
         cp_gain = function ()
-            if buff.shadow_blades.up then return 7 end
-            if buff.premeditation.up then return combo_points.max end
-            return 1 + ( buff.broadside.up and 1 or 0 )
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
+            else return 1 end
         end,
 
         handler = function ()
@@ -1400,9 +1359,8 @@ spec:RegisterAbilities( {
 
         startsCombat = true,
         cp_gain = function()
-            if buff.shadow_blades.up then return 7 end
-            if buff.premeditation.up then return combo_points.max end
-            return active_enemies + ( buff.clear_the_witnesses and 1 or 0 )
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
+            else return active_enemies + ( buff.clear_the_witnesses and 1 or 0 ) end
         end,
 
         used_for_danse = function()
@@ -1475,9 +1433,8 @@ spec:RegisterAbilities( {
 
         startsCombat = true,
         cp_gain = function()
-            if buff.shadow_blades.up then return 7 end
-            if buff.premeditation.up then return combo_points.max end
-            return 1
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
+            else return 1 end
         end,
 
         handler = function ()
