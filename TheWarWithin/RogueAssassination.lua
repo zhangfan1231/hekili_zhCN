@@ -533,7 +533,6 @@ spec:RegisterHook( "spend", function( amt, resource )
 end )
 
 spec:RegisterStateExpr( "poison_chance", function ()
-
     return ( 0.3 + ( talent.destiny_defined.enabled and 0.05 or 0 ) + ( talent.improved_poisons.enabled and 0.05 or 0 ) ) * ( talent.dragontempered_blades.enabled and 0.7 or 1 )
 end )
 
