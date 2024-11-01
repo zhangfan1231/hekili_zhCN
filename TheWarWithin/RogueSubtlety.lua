@@ -1317,10 +1317,13 @@ spec:RegisterAbilities( {
         handler = function ()
             st_gain( "shadowstrike" )
 
-            if buff.the_rotten.up and talent.improved_backstab.enabled then
+            if buff.the_rotten.up then
                 removeStack( "the_rotten" )
+                if talent.improved_backstab.enabled then
+                    applyDebuff( "target", "find_weakness" )
+                end
             end
-            applyDebuff( "target", "find_weakness" )
+            
 
             if buff.premeditation.up then
                 removeBuff( "premeditation" )
@@ -1413,9 +1416,11 @@ spec:RegisterAbilities( {
             if talent.clear_the_witnesses.enabled then removeBuff( "clear_the_witnesses" ) end
             if talent.premeditation.enabled then removeBuff( "premeditation" ) end
 
-            if buff.the_rotten.up and talent.improved_shuriken_storm.enabled then
+            if buff.the_rotten.up then
                 removeStack( "the_rotten" )
-                active_dot.find_weakness = active_enemies
+                if talent.improved_shuriken_storm.enabled then
+                    applyDebuff( "target", "find_weakness" )
+                end
             end
 
             if buff.silent_storm.up then
