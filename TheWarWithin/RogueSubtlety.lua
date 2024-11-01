@@ -1457,7 +1457,7 @@ spec:RegisterAbilities( {
         cast = 0,
         charges = function() if talent.death_perception.enabled then return talent.death_perception.rank + 1 end end,
         cooldown = function() return 30 - ( 5 * talent.swift_death.rank ) end,
-        recharge = function() if talent.death_perception.enabled then return 30 end end,
+        recharge = function() if talent.death_perception.enabled then return 30 - ( 5 * talent.swift_death.rank ) end end,
         gcd = "off",
         school = "physical",
 
