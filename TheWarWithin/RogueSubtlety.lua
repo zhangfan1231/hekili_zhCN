@@ -622,21 +622,13 @@ spec:RegisterHook( "spend", function( amt, resource )
             applyBuff( "deathstalkers_mark_buff" )
         end
 
-        if talent.alacrity.enabled and amt >= 10 then
-            addStack( "alacrity" )
-        end
-
-        if talent.secret_technique.enabled then
-            reduceCooldown( "secret_technique", amt )
-        end
-
-        if talent.deepening_shadows.enabled then reduceCooldown( "shadow_dance", amt * 0.5 ) end
-
-        if legendary.obedience.enabled and buff.flagellation_buff.up then
-            reduceCooldown( "flagellation", amt )
-        end
-
+        if talent.alacrity.enabled and effective_combo_points >= 10 then addStack( "alacrity" ) end
+        if talent.secret_technique.enabled then reduceCooldown( "secret_technique", amt ) end
+        if talent.deepening_shadows.enabled then reduceCooldown( "shadow_dance", amt * effective_combo_points ) end
         if talent.supercharger.enabled and buff.supercharged_combo_points.up then removeStack( "supercharged_combo_points" ) end
+
+        -- Legacy
+        if legendary.obedience.enabled and buff.flagellation_buff.up then reduceCooldown( "flagellation", amt ) end
     end
 end )
 
@@ -718,6 +710,10 @@ local TriggerLingeringDarkness = setfenv( function ()
     applyBuff( "lingering_darkness" )
 end, state )
 
+local TriggerLingeringShadow = setfenv( function ()
+    applyBuff( "lingering_shadow" )
+end, state )
+
 
 spec:RegisterStateTable( "danse_macabre_tracker", setmetatable( {}, {
     __index = function( t, k )
@@ -780,9 +776,14 @@ spec:RegisterHook( "reset_precast", function( amt, resource )
 
     if buff.cold_blood.up then setCooldown( "cold_blood", action.cold_blood.cooldown ) end
 
-    if talent.lingering_darkness.enabled and buff.shadow_dance.up then
-        state:QueueAuraEvent( "lingering_darkness", TriggerLingeringDarkness, buff.shadow_dance.expires, "AURA_EXPIRATION" )
+    if talent.lingering_darkness.enabled and buff.shadow_blades.up then
+        state:QueueAuraEvent( "lingering_darkness", TriggerLingeringDarkness, buff.shadow_blades.expires, "AURA_EXPIRATION" )
     end
+
+    if talent.lingering_shadow.enabled and buff.shadow_Dance.up then
+        state:QueueAuraEvent( "lingering_shadow", TriggerLingeringShadow, buff.shadow_dance.expires, "AURA_EXPIRATION" )
+    end
+
 end )
 
 spec:RegisterHook( "step", function()
@@ -962,7 +963,7 @@ spec:RegisterAbilities( {
         handler = function ()
             removeBuff( "masterful_finish" )
 
-            if talent.alacrity.enabled and effective_combo_points > 9 then addStack( "alacrity" ) end
+            if talent.symbolic_victory.enabled and buff.symbolic_victory.up then removeBuff( "symbolic_victory" ) end
 
             if buff.finality_black_powder.up then removeBuff( "finality_black_powder" )
             elseif talent.finality.enabled then applyBuff( "finality_black_powder" ) end
@@ -1010,8 +1011,7 @@ spec:RegisterAbilities( {
             st_gain( "cheap_shot" )
             removeBuff( "premeditation" )
 
-            if buff.cold_blood.up then removeBuff( "cold_blood" )
-            elseif buff.the_rotten.up then removeStack( "the_rotten" ) end
+            if buff.the_rotten.up then removeStack( "the_rotten" ) end
         end,
     },
 
@@ -1046,9 +1046,6 @@ spec:RegisterAbilities( {
                 removeBuff( "coup_de_grace" )
             end
 
-            if talent.alacrity.enabled and effective_combo_points > 9 then
-                addStack( "alacrity" )
-            end
             removeBuff( "nights_vengeance" )
 
             if buff.finality_eviscerate.up then removeBuff( "finality_eviscerate" )
@@ -1058,11 +1055,13 @@ spec:RegisterAbilities( {
                 applyDebuff( "target", "deathstalkers_mark", nil, debuff.deathstalkers_mark.stack + 3 )
             end
 
+            if talent.symbolic_victory.enabled and buff.symbolic_victory.up then removeBuff( "symbolic_victory" ) end
+
             if set_bonus.tier29_2pc > 0 then applyBuff( "honed_blades", nil, effective_combo_points ) end
 
             if buff.slice_and_dice.up then
-                buff.slice_and_dice.expires = buff.slice_and_dice.expires + combo_points.current * 3
-            else applyBuff( "slice_and_dice", combo_points.current * 3 ) end
+                buff.slice_and_dice.expires = buff.slice_and_dice.expires + effective_combo_points * 3
+            else applyBuff( "slice_and_dice", effective_combo_points * 3 ) end
 
             spend( combo_points.current, "combo_points" )
 
@@ -1192,8 +1191,7 @@ spec:RegisterAbilities( {
         usable = function () return combo_points.current > 0, "requires combo_points" end,
         handler = function ()
             applyBuff( "secret_technique" ) -- fake buff for APL logic.
-            removeStack( "goremaws_bite" )
-            if talent.alacrity.enabled and effective_combo_points > 9 then addStack( "alacrity" ) end
+            if talent.goremaws_bite.enabled and buff.goremaws_bite.up then removeStack( "goremaws_bite" ) end
             spend( combo_points.current, "combo_points" )
         end,
     },
@@ -1202,7 +1200,7 @@ spec:RegisterAbilities( {
     shadow_blades = {
         id = 121471,
         cast = 0,
-        cooldown = function () return ( essence.vision_of_perfection.enabled and 0.87 or 1 ) * 90 * ( pvptalent.thiefs_bargain.enabled and 0.8 or 1 ) end,
+        cooldown = function () return 90 * ( essence.vision_of_perfection.enabled and 0.87 or 1 ) * ( pvptalent.thiefs_bargain.enabled and 0.8 or 1 ) end,
         gcd = "off",
         school = "physical",
 
@@ -1213,6 +1211,7 @@ spec:RegisterAbilities( {
 
         handler = function ()
             applyBuff( "shadow_blades" )
+
         end,
     },
 
