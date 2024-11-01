@@ -1141,7 +1141,7 @@ spec:RegisterAbilities( {
 
         cp_gain = function()
             if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max end
-             return 3
+            return 3
         end,
 
         handler = function()
