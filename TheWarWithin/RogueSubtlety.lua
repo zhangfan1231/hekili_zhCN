@@ -774,7 +774,7 @@ spec:RegisterHook( "reset_precast", function( amt, resource )
         state:QueueAuraEvent( "lingering_darkness", TriggerLingeringDarkness, buff.shadow_blades.expires, "AURA_EXPIRATION" )
     end
 
-    if talent.lingering_shadow.enabled and buff.shadow_Dance.up then
+    if talent.lingering_shadow.enabled and buff.shadow_dance.up then
         state:QueueAuraEvent( "lingering_shadow", TriggerLingeringShadow, buff.shadow_dance.expires, "AURA_EXPIRATION" )
     end
 
