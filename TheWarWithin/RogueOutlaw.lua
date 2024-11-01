@@ -853,10 +853,9 @@ spec:RegisterHook( "reset_precast", function()
         removeStack( "opportunity", numShots )
     end
 
-    if talent.underhanded_upper_hand.enabled then
-        if buff.adrenaline_rush.up and buff.subterfuge.up then
-            buff.adrenaline_rush.expires = buff.adrenaline_rush.expires + buff.subterfuge.remains
-        end
+    if talent.underhanded_upper_hand.enabled and buff.adrenaline_rush.up and buff.subterfuge.up then
+        buff.adrenaline_rush.expires = buff.adrenaline_rush.expires + buff.subterfuge.remains
+    end
 
         if buff.blade_flurry.up and buff.adrenaline_rush.up then
             buff.blade_flurry.expires = buff.blade_flurry.expires + buff.adrenaline_rush.remains
@@ -1001,9 +1000,7 @@ spec:RegisterAbilities( {
         handler = function ()
             applyBuff( "blade_flurry" )
             if talent.deft_maneuvers.enabled then gain( action.blade_flurry.cp_gain, "combo_points" ) end
-            if talent.underhanded_upper_hand.enabled then
-                if buff.adrenaline_rush.up then buff.blade_flurry.expires = buff.blade_flurry.expires + buff.adrenaline_rush.remains end
-            end
+            if talent.underhanded_upper_hand.enabled and buff.adrenaline_rush.up then buff.blade_flurry.expires = buff.blade_flurry.expires + buff.adrenaline_rush.remains end
         end,
     },
 
@@ -1074,7 +1071,7 @@ spec:RegisterAbilities( {
         gcd = "totem",
         school = "physical",
 
-        spend = function() return 35 * ( talent.tight_spender.enabled and 0.94 or 1 ) - 5 * ( buff.summarily_dispatched.up and buff.summarily_dispatched.stack or 0 ) end,
+        spend = function() return 35 * ( talent.tight_spender.enabled and 0.94 or 1 ) - 5 * ( buff.summarily_dispatched.up and buff.summarily_dispatched.stack ) end,
         spendType = "energy",
 
         startsCombat = true,
@@ -1122,7 +1119,7 @@ spec:RegisterAbilities( {
         talent = "ghostly_strike",
         startsCombat = true,
 
-        cp_gain = function () return  1 + ( buff.broadside.up and 1 or 0 ) end,
+        cp_gain = function () return 1 + ( buff.broadside.up and 1 or 0 ) end,
 
         handler = function ()
             applyDebuff( "target", "ghostly_strike" )

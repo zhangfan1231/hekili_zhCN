@@ -374,12 +374,6 @@ spec:RegisterAuras( {
         duration = 10,
         max_stack = 1,
     },
-    --[[symbols_of_death_crit = {
-        id = 227151,
-        duration = 10,
-        max_stack = 1,
-        copy = "symbols_of_death_autocrit"
-    },--]]
     -- Talent: Your next Shadowstrike or $?s200758[Gloomblade][Backstab] deals $s3% increased damage, generates $s1 additional combo points, and is guaranteed to critically strike.
     -- https://wowhead.com/beta/spell=394203
     the_first_dance_prep = {
@@ -894,8 +888,8 @@ spec:RegisterAbilities( {
         notalent = "gloomblade",
 
         cp_gain = function ()
-            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
-            else return 1 end
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max end
+            return 1
         end,
 
         used_for_danse = function()
@@ -999,8 +993,8 @@ spec:RegisterAbilities( {
         end,
 
         cp_gain = function()
-            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
-            else return 1 end
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max end
+            return 1
         end,
 
         handler = function ()
@@ -1146,8 +1140,8 @@ spec:RegisterAbilities( {
         startsCombat = true,
 
         cp_gain = function()
-            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
-            else return 3 end
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max end
+             return 3
         end,
 
         handler = function()
@@ -1275,8 +1269,8 @@ spec:RegisterAbilities( {
         cycle = function () return talent.find_weakness.enabled and "find_weakness" or nil end,
 
         cp_gain = function ()
-            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
-            else return 2 + ( talent.improved_ambush.enabled and 1 or 0 ) end
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max end
+            return 2 + ( talent.improved_ambush.enabled and 1 or 0 )
         end,
 
         usable = function () return stealthed.all or buff.sepsis_buff.up, "requires stealth or sepsis_buff" end,
@@ -1306,7 +1300,7 @@ spec:RegisterAbilities( {
                 if talent.clear_the_witnesses.enabled then applyBuff( "clear_the_witnesses" ) end
             end
 
-            if covenant.night_fae then removeBuff( "sepsis_buff" ) end
+            if buff.sepsis_buff.up then removeBuff( "sepsis_buff" ) end
             if conduit.perforated_veins.enabled then
                 addStack( "perforated_veins" )
             end
@@ -1342,8 +1336,8 @@ spec:RegisterAbilities( {
         startsCombat = true,
 
         cp_gain = function ()
-            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
-            else return 1 end
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max end
+            return 1
         end,
 
         handler = function ()
@@ -1371,8 +1365,8 @@ spec:RegisterAbilities( {
 
         startsCombat = true,
         cp_gain = function()
-            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
-            else return active_enemies + ( buff.clear_the_witnesses and 1 or 0 ) end
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max end
+            return active_enemies + ( buff.clear_the_witnesses and 1 or 0 )
         end,
 
         used_for_danse = function()
@@ -1445,8 +1439,8 @@ spec:RegisterAbilities( {
 
         startsCombat = true,
         cp_gain = function()
-            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max
-            else return 1 end
+            if buff.shadow_blades.up or buff.premeditation.up then return combo_points.max end
+            return 1
         end,
 
         handler = function ()
@@ -1461,9 +1455,7 @@ spec:RegisterAbilities( {
     symbols_of_death = {
         id = 212283,
         cast = 0,
-        charges = function() if talent.death_perception.enabled then
-            return talent.death_perception.rank + 1 else return nil end
-        end,
+        charges = function() if talent.death_perception.enabled then return talent.death_perception.rank + 1 end end,
         cooldown = function() return 30 - ( 5 * talent.swift_death.rank ) end,
         recharge = function() if talent.death_perception.enabled then return 30 end end,
         gcd = "off",
@@ -1481,7 +1473,7 @@ spec:RegisterAbilities( {
                 applyBuff( "symbolic_victory" )
             end
 
-            if set_bonus.tww1 > 2 then
+            if set_bonus.tww1 >= 2 then
                 applyBuff( "poised_shadows" )
             end
 
