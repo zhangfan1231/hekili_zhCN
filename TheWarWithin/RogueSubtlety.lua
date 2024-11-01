@@ -846,7 +846,7 @@ spec:RegisterGear( "will_of_valeera", 137069 )
 
 
 --- The War Within
-spec:RegisterGear( "tww1", 212039, 212037, 212041, 212038 ) -- shoulders?
+spec:RegisterGear( "tww1", 212039, 212037, 212041, 212038, 212036 )
 
 -- DF Tier Set
 spec:RegisterGear( "tier31", 207234, 207235, 207236, 207237, 207239, 217208, 217210, 217206, 217207, 217209 )
