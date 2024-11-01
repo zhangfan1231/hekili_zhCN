@@ -853,11 +853,12 @@ spec:RegisterHook( "reset_precast", function()
         removeStack( "opportunity", numShots )
     end
 
-    if talent.underhanded_upper_hand.enabled and buff.adrenaline_rush.up and buff.subterfuge.up then
-        buff.adrenaline_rush.expires = buff.adrenaline_rush.expires + buff.subterfuge.remains
-    end
-
-        if buff.blade_flurry.up and buff.adrenaline_rush.up then
+    if talent.underhanded_upper_hand.enabled and buff.adrenaline_rush.up then
+        -- Revisit for all Stealth effects (and then resume countdown upon breaking Stealth).
+        if buff.subterfuge.up then
+            buff.adrenaline_rush.expires = buff.adrenaline_rush.expires + buff.subterfuge.remains
+        end
+        if buff.blade_flurry.up then
             buff.blade_flurry.expires = buff.blade_flurry.expires + buff.adrenaline_rush.remains
         end
     end
