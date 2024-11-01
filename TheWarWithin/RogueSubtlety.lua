@@ -891,7 +891,7 @@ spec:RegisterAbilities( {
         handler = function ()
 
             if talent.perforated_veins.enabled then
-                if buff.perforated_veins.up and buff.perforated_veins.stack < 4 then
+                if buff.perforated_veins.stack < 4 then
                     addStack( "perforated_veins" )
                 else removeBuff( "perforated_veins" )
                 end

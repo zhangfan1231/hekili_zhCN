@@ -958,7 +958,7 @@ spec:RegisterAbilities( {
 
             applyBuff( "between_the_eyes" )
 
-            if stealthed.rogue and talent.crachshot.enabled then
+            if stealthed.rogue and talent.crackshot.enabled then
                 spec.abilities.dispatch.handler()
             end
 
