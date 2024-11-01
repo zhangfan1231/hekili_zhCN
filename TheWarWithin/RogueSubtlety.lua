@@ -283,15 +283,14 @@ spec:RegisterAuras( {
         duration = 3,
         max_stack = 1,
     },
-    perforated_veins_stack = {
+    perforated_veins = {
         id = 394254,
         duration = 3600,
         max_stack = 4
     },
-    -- At $394254u stacks, your next attack that generates combo points deals $w1% increased damage.
-    perforated_veins = {
-        id = 426602,
-        duration = 3600,
+    poised_shadows = {
+        id = 455573,
+        duration = 30,
         max_stack = 1,
     },
     premeditation = {
@@ -370,12 +369,17 @@ spec:RegisterAuras( {
         max_stack = function() return combo_points.max end,
         copy = { "supercharge", "supercharged", "supercharger" }
     },
-    symbols_of_death_crit = {
+    symbols_of_death = {
+        id = 212283,
+        duration = 10,
+        max_stack = 1,
+    },
+    --[[symbols_of_death_crit = {
         id = 227151,
         duration = 10,
         max_stack = 1,
         copy = "symbols_of_death_autocrit"
-    },
+    },--]]
     -- Talent: Your next Shadowstrike or $?s200758[Gloomblade][Backstab] deals $s3% increased damage, generates $s1 additional combo points, and is guaranteed to critically strike.
     -- https://wowhead.com/beta/spell=394203
     the_rotten = {
@@ -830,19 +834,13 @@ spec:RegisterGear( "will_of_valeera", 137069 )
     } )
 
 
--- Tier Sets
-spec:RegisterGear( "tier21", 152163, 152165, 152161, 152160, 152162, 152164 )
-spec:RegisterGear( "tier20", 147172, 147174, 147170, 147169, 147171, 147173 )
-spec:RegisterGear( "tier19", 138332, 138338, 138371, 138326, 138329, 138335 )
 
--- Tier 31
-spec:RegisterGear( "tier31", 207234, 207235, 207236, 207237, 207239, 217208, 217210, 217206, 217207, 217209 )
-
--- Tier 30
-spec:RegisterGear( "tier30", 202500, 202498, 202497, 202496, 202495 )
--- Shadow Dance is in RogueAssassination.lua, so the 2pc bonus is handled there.
+--- The War Within
+spec:RegisterGear( "tww1", 212039, 212037, 212041, 212038 ) -- shoulders?
 
 -- DF Tier Set
+spec:RegisterGear( "tier31", 207234, 207235, 207236, 207237, 207239, 217208, 217210, 217206, 217207, 217209 )
+spec:RegisterGear( "tier30", 202500, 202498, 202497, 202496, 202495 )
 spec:RegisterGear( "tier29", 200369, 200371, 200372, 200373, 200374 )
 spec:RegisterAuras( {
     honed_blades = {
@@ -857,6 +855,10 @@ spec:RegisterAuras( {
     }
 })
 
+-- Old Tier Sets
+spec:RegisterGear( "tier21", 152163, 152165, 152161, 152160, 152162, 152164 )
+spec:RegisterGear( "tier20", 147172, 147174, 147170, 147169, 147171, 147173 )
+spec:RegisterGear( "tier19", 138332, 138338, 138371, 138326, 138329, 138335 )
 
 
 -- Abilities
@@ -878,7 +880,7 @@ spec:RegisterAbilities( {
         cp_gain = function ()
             if buff.shadow_blades.up then return 7 end
             if buff.premeditation.up then return combo_points.max end
-            return 1 + ( buff.broadside.up and 1 or 0 )
+            return 1
         end,
 
         used_for_danse = function()
@@ -887,21 +889,34 @@ spec:RegisterAbilities( {
         end,
 
         handler = function ()
+
+            if talent.perforated_veins.enabled then
+                if buff.perforated_veins.up and buff.perforated_veins.stack < 4 then
+                    addStack( "perforated_veins" )
+                else removeBuff( "perforated_veins" )
+                end
+            end
+
+            if buff.the_rotten.up and talent.improved_backstab.enabled then
+                removeStack( "the_rotten" )
+                applyDebuff( "target", "find_weakness" )
+            end
+
+            if talent.inevitability.enabled and buff.symbols_of_death.up then
+                buff.symbols_of_death.expires = buff.symbols_of_death.expires + 0.5
+            end
+
+            st_gain( "backstab" )
+
+            removeBuff( "premeditation" )
+            removeBuff( "the_rotten" )
             removeBuff( "honed_blades" )
-            applyDebuff( "target", "shadows_grasp", 8 )
 
             if azerite.perforate.enabled and buff.perforate.up then
                 -- We'll assume we're attacking from behind if we've already put up Perforate once.
                 addStack( "perforate" )
                 gainChargeTime( "shadow_blades", 0.5 )
             end
-
-            st_gain( "backstab" )
-
-            removeBuff( "perforated_veins" )
-            removeBuff( "premeditation" )
-            removeBuff( "symbols_of_death_crit" )
-            removeBuff( "the_rotten" )
         end,
 
         bind = "gloomblade"
@@ -1132,13 +1147,10 @@ spec:RegisterAbilities( {
         end,
 
         handler = function ()
-            applyDebuff( "target", "shadows_grasp", 8 )
-
             st_gain( "gloomblade" )
             removeBuff( "premeditation" )
 
-            if buff.the_rotten.up then removeStack( "the_rotten" )
-            else removeBuff( "symbols_of_death_crit" ) end
+            if buff.the_rotten.up then removeStack( "the_rotten" ) end
         end,
 
         bind = "backstab"
@@ -1305,32 +1317,27 @@ spec:RegisterAbilities( {
         handler = function ()
             st_gain( "shadowstrike" )
 
-            removeBuff( "honed_blades" )
-            removeBuff( "premeditation" )
-            removeBuff( "symbols_of_death_crit" )
-            removeBuff( "the_rotten" )
+            if buff.the_rotten.up and talent.improved_backstab.enabled then
+                removeStack( "the_rotten" )
+            end
+            applyDebuff( "target", "find_weakness" )
 
-            if azerite.blade_in_the_shadows.enabled then addStack( "blade_in_the_shadows" ) end
             if buff.premeditation.up then
-                if buff.slice_and_dice.up then
-                    if buff.slice_and_dice.remains < 10 then buff.slice_and_dice.expires = query_time + 10 end
-                else
-                    applyBuff( "slice_and_dice", 10 )
-                end
                 removeBuff( "premeditation" )
             end
 
             if talent.deathstalkers_mark.enabled and stealthed.all then
                 applyDebuff( "target", "deathstalkers_mark", nil, 3 )
+                if talent.clear_the_witnesses.enabled then applyBuff( "clear_the_witnesses" ) end
             end
 
+            if covenant.night_fae then removeBuff( "sepsis_buff" ) end
             if conduit.perforated_veins.enabled then
                 addStack( "perforated_veins" )
             end
+            if azerite.blade_in_the_shadows.enabled then addStack( "blade_in_the_shadows" ) end
 
-            removeBuff( "sepsis_buff" )
 
-            applyDebuff( "target", "find_weakness" )
         end,
 
         bind = "ambush"
@@ -1382,8 +1389,7 @@ spec:RegisterAbilities( {
         school = "physical",
 
         spend = function ()
-            if buff.goremaws_bite.up then return 0 end
-            return 35 * ( ( talent.shadow_focus.enabled and ( buff.shadow_dance.up or buff.stealth.up ) ) and 0.95 or 1 )
+            return 45 * ( ( talent.shadow_focus.enabled and ( buff.shadow_dance.up or buff.stealth.up ) ) and 0.95 or 1 )
         end,
         spendType = "energy",
 
@@ -1393,7 +1399,7 @@ spec:RegisterAbilities( {
         cp_gain = function()
             if buff.shadow_blades.up then return 7 end
             if buff.premeditation.up then return combo_points.max end
-            return active_enemies
+            return active_enemies + ( buff.clear_the_witnesses and 1 or 0 )
         end,
 
         used_for_danse = function()
@@ -1404,10 +1410,13 @@ spec:RegisterAbilities( {
         handler = function ()
             st_gain( "shuriken_storm" )
 
-            removeBuff( "honed_blades" )
-            removeBuff( "premeditation" )
-            removeBuff( "symbols_of_death_crit" )
-            removeStack( "the_rotten" )
+            if talent.clear_the_witnesses.enabled then removeBuff( "clear_the_witnesses" ) end
+            if talent.premeditation.enabled then removeBuff( "premeditation" ) end
+
+            if buff.the_rotten.up and talent.improved_shuriken_storm.enabled then
+                removeStack( "the_rotten" )
+                active_dot.find_weakness = active_enemies
+            end
 
             if buff.silent_storm.up then
                 applyDebuff( "target", "find_weakness" )
@@ -1470,7 +1479,6 @@ spec:RegisterAbilities( {
             st_gain( "shuriken_toss" )
 
             removeBuff( "premeditation" )
-            removeBuff( "symbols_of_death_crit" )
             removeStack( "the_rotten" )
         end,
     },
@@ -1479,19 +1487,31 @@ spec:RegisterAbilities( {
     symbols_of_death = {
         id = 212283,
         cast = 0,
-        charges = function() if talent.death_perception.enabled then return 1 end end,
-        cooldown = 30,
+        charges = function() if talent.death_perception.enabled then
+            return talent.death_perception.rank + 1 else return nil end
+        end,
+        cooldown = function() return 30 - ( 5 * talent.swift_death.rank ) end,
         recharge = function() if talent.death_perception.enabled then return 30 end end,
         gcd = "off",
         school = "physical",
+
+        spend = -40,
+        spendType = "energy",
 
         startsCombat = false,
 
         handler = function ()
             applyBuff( "symbols_of_death" )
-            -- applyBuff( "symbols_of_death_crit" )
 
-            if legendary.the_rotten.enabled then applyBuff( "the_rotten" ) end
+            if talent.symbolic_victory.enabled then
+                applyBuff( "symbolic_victory" )
+            end
+
+            if set_bonus.tww1 > 2 then
+                applyBuff( "poised_shadows" )
+            end
+
+            if talent.the_rotten.enabled or legendary.the_rotten.enabled then applyBuff( "the_rotten" ) end
             if talent.supercharger.enabled then addStack( "supercharged_combo_points", nil, talent.supercharger.rank ) end
         end,
     }
