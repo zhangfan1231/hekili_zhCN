@@ -1502,7 +1502,7 @@ spec:RegisterOptions( {
     damage = true,
     damageExpiration = 6,
 
-    potion = "phantom_fire",
+    potion = "tempered_potion",
 
     package = "Subtlety",
 } )
@@ -1516,55 +1516,6 @@ spec:RegisterSetting( "priority_rotation", false, {
     width = "full"
 })
 
---[[
-spec:RegisterStateExpr( "priority_rotation", function ()
-    local prio = settings.priority_rotation
-    if prio == nil then return true end
-    return prio
-end )
---]]
-
-spec:RegisterSetting( "mfd_points", 3, {
-    name = "|T236340:0|t Marked for Death Combo Points",
-    desc = "The addon will only recommend |T236364:0|t Marked for Death when you have the specified number of combo points or fewer.",
-    type = "range",
-    min = 0,
-    max = 5,
-    step = 1,
-    width = "full"
-} )
-
-
-
-spec:RegisterSetting( "rupture_duration", 12, {
-    name = strformat( "%s Duration", Hekili:GetSpellLinkWithTexture( 1943 ) ),
-    desc = strformat( "If set above 0, %s will not be recommended if the target will die within the timeframe specified.\n\n"
-        .. "Popular guides suggest using that a target should live at least 12 seconds for %s to be worth using.\n\n",
-        Hekili:GetSpellLinkWithTexture( 1943 ), class.specs[ 259 ].abilities.rupture.name ),
-    type = "range",
-    min = 0,
-    max = 18,
-    step = 0.1,
-    width = "full",
-} )
-
-spec:RegisterSetting( "vanish_charges_reserved", 0, {
-    name = strformat( "Reserve %s Charges", Hekili:GetSpellLinkWithTexture( 1856 ) ),
-    desc = strformat( "If set above zero, %s will not be recommended if it would leave you with fewer (fractional) charges.", Hekili:GetSpellLinkWithTexture( 1856 ) ),
-    type = "range",
-    min = 0,
-    max = 2,
-    step = 0.1,
-    width = "full"
-} )
-
-spec:RegisterSetting( "solo_vanish", true, {
-    name = "Allow |T132331:0|t Vanish when Solo",
-    desc = "If unchecked, the addon will not recommend |T132331:0|t Vanish when you are alone (to avoid resetting combat).",
-    type = "toggle",
-    width = "full"
-} )
-
 spec:RegisterSetting( "allow_shadowmeld", nil, {
     name = "Allow |T132089:0|t Shadowmeld",
     desc = "If checked, |T132089:0|t Shadowmeld can be recommended for Night Elves when its conditions are met.  Your stealth-based abilities can be used in Shadowmeld, even if your action bar does not change.  " ..
@@ -1577,5 +1528,52 @@ spec:RegisterSetting( "allow_shadowmeld", nil, {
     end,
 } )
 
+spec:RegisterSetting( "solo_vanish", true, {
+    name = strformat( "Allow %s When Solo", Hekili:GetSpellLinkWithTexture( 1856 ) ),  -- Vanish
+    desc = strformat( "If enabled, %s can be recommended even when you are alone, |cFFFF0000which may reset combat|r.", Hekili:GetSpellLinkWithTexture( 1856 ) ),
+    type = "toggle",
+    width = "full"
+} )
+
+spec:RegisterSetting( "vanish_charges_reserved", 0, {
+    name = strformat( "Reserve %s Charges", Hekili:GetSpellLinkWithTexture( 1856 ) ),
+    desc = strformat( "If set above zero, %s will not be recommended if it would leave you with fewer than this many (fractional) charges.", Hekili:GetSpellLinkWithTexture( 1856 ) ),
+    type = "range",
+    min = 0,
+    max = 2,
+    step = 0.1,
+    width = 1.5
+} )
+
+spec:RegisterSetting( "rupture_duration", 12, {
+    name = strformat( "%s Duration", Hekili:GetSpellLinkWithTexture( 1943 ) ),
+    desc = strformat( "If set above 0, %s will not be recommended if the target will die within the timeframe specified.\n\n"
+        .. "Popular guides suggest using that a target should live at least 12 seconds for %s to be worth using.\n\n",
+        Hekili:GetSpellLinkWithTexture( 1943 ), class.specs[ 259 ].abilities.rupture.name ),
+    type = "range",
+    min = 0,
+    max = 18,
+    step = 0.1,
+    width = 1.5,
+} )
+
+--[[
+spec:RegisterStateExpr( "priority_rotation", function ()
+    local prio = settings.priority_rotation
+    if prio == nil then return true end
+    return prio
+end )
+
+
+spec:RegisterSetting( "mfd_points", 3, {
+    name = "|T236340:0|t Marked for Death Combo Points",
+    desc = "The addon will only recommend |T236364:0|t Marked for Death when you have the specified number of combo points or fewer.",
+    type = "range",
+    min = 0,
+    max = 5,
+    step = 1,
+    width = "full"
+} )
+--]]
 
 spec:RegisterPack( "Subtlety", 20241101, [[Hekili:nZ16tUTTr8)wUXZqFY2NQECVsQ19HK02jEAZ0jYt73efefKe7rrYqa6lQZn6V9Ul4laWfKsNpNPF5IfjWID)Hf7lSmlgV4ZlMVMj5l(LjJMC94XJgpC80j3n97wmxEiLVyEkl4r2w4FeZ2d)DE(kzexEaFXHOe2AKaIK8Sa4LlMVkpms(ZXlwrt17HXMYdGhF74fZ3fUEnVySCrWI54yVA8ORgD73FC58W9)4XL5PizeFa(D8pDCzsU8QKnxfKSFftc)mo6WXLHBoUmJVjJl2XwfX)Zhx(34SSRyx9RS4TQ5a)bgJqYzrYDh)0XpPwPrF3vtMaR0FzZMWGqECWH61tFmJMcRo8Fhp2MRAg19xn(gyukY5yi3D1K7H3(5D8Jl)3Sm4pHYDHXlMhfkKcefrSdHZFrTPWJrHz9IFyXCwGmmbgjiFRtEsiZcFea7GdbrCFjlBlhMpmP5bzHsEwidXZv5B2mCty8A)N4ShJ5cXWm(EwyS44Ypody1Jl9oUeP8x4(8y((qGzxw)cjlIhlhMhl48y)vrS18HLC0XLp)8XLxaIOGV2FtsM)Agmm10UOEMPWQXxhkziRxn1In6SW0c55hHTXKJl)NjHXWw0pGIppBHe0oSaGgbRK6R5m5ob8Jh5zc)9SShB4Uc2qj)MmrEkPm)ai0xQK73FC50JlFx5KlqBu4c4Q5oOqYvVeGEwMVCh3)PqjIUCrf9RwCXbq6Ie(jB8vSR691eyte7PiyEiaUVlwBAfr)cdqaqehwQhRRxKJQeX(cjqmeaN6eavlEuy8w4NXBbPlRq5OI5onaoijjcaN4kqsPGOPHPyCAvShk0X0wlALmVUGrh09AcmbGKyGhru5AevOpm1GvW4UXj6HgEs8trfwbGrODdzP02q5Tjio8KWFfmnKE3QVUBJsaIGYQ1QEN(OwbwDb4FL5yK4bOnS8izTzIAXPsPWGMt0hYJHbpA9EB9KKuGsCzZCQu6W)vuoVu)P1rJA16s2W8HFHfhkWNPONFHJKkgUAF5vIlQp9ffgW9zG9V1H2mjQ0Zfs)4WT7K1VIsH6ElRAz8uGUG5e4OtPcKHgBhA0gY(JHP(z5PY8moLcx)aayWADcWpf0yOe2AdrNDOG0yOqBzuMV8Cbo6mhEewcmdGQ1kVNfV5EZ5snlhGbWT8OOctZnUMGdXJmnXqpWhaRiJ0XCLXb)uoeisQUphqWnGEEqgxwFE7SeSlBSDxZr(QNuAtQt)gnArMgnpnlEkL3eHqnSnOIRVoOnzKUqMXcczr(IdXbOKE)zlP625kIxyCNNFu7x6tbp8CxXu4B2WloA1Ei3EwNA2T2piffOVZsGSIQOqXr0iFbSOi)IF4JHBve0vjzdwlqAoEKJOUwbgSH4CYZoyTq)QcLf6(hQp6zTdm2oKUEMsZIdUF5z4zBfzChyefzCQt2q)nHzCLaQiV7Wg6MlrYcEsHNJiTIu220nqUFwY3dAax(zigKhHOxhuLDHmJZc2XZsYf(a9If7dLahy6cUBdinHx484cQoFtd37ArrXW2YC1Cc3dwAq9AFMiGhJa7bFyNkF)I5qCXWz3n(BdwRclVq06AgAbUtzu3Rd7okU02gDfxUNT2)3YHdvyiCXQeY0wRl1TjresixpE)(IBK)B5HPP81dDGMv(Fkw0(hnsZ6TAhJQL3GbN2gFLFUwGdIL2UfA0su6QJTqW6dgLVxDYWxeLivztnUsO1pgwA4VxZ6ZmKQ(xSjAiC5igkNmSggbuC9bZCuAXqNsW91SvJNTU4m40n(peAyic02ELSa6jNhqp5psGEmfqp())a6jkG(08wcOscCUBUDYLT9D2STqMvQMR1YN5x6IDITlwdo5VgIzjOm49R5qQXNml4oMKEc94CcObMrqkyO439fPG1BdXCJIZvsOTF(tOEhNwukffhcxc7yaSaXOiEgwUSuWtHOOinfLi7qsoidSy1ZoUmorwa28ibF4jd2DUFVju59hMtAgVOiDTsuLLMgDaHvb(R2zREwXPkt2Uf4Ln5XX8ilOy(tmyJucaEAwycidWjYSKIAbvGisSwCv0eEeaxeHDwnB)Qj)YsC2WXHMrJDmHpKPVCil(G)6ubTn82JsvafcBpRZZkfrulNYnqZimYmQLbLxwQ5tiLtkjGYeApYjPu8qFar)I55NaURTZqHROv6Ljo)mTDH1FfmXD9wujzTbpIsvtKXqzg3nev9BFjpyxCieag1j)QXwvJeZt2)JMkuCCzHBdZCeUWzrqQ15Cw9eTBsOkM1IASddBp3xM4VoeEZv4iB8tFlLrHwsXjYH6VSL1hNCutDSFNTZRcXWqY8Cuz2fTVxbcZan5gZcEewMNuoYm2K(jiZYaWn3pX2dzT0)(eTGw)69675UyEJqUiRWURWfOmce066uy)xiLf90N5FjesMlJruNxTxzF8bdhQJR5jamG5xKuUZkBqKpS95QUlkfzfBU1eZBQvM76oOOUIzJYfY(d1(4YPJmVgK2P0wJePjU83AKAaDvZmcVFA3At9wzp3OSUODVDL(mQrr78PnwUuEMiuuh(zV3axFfiDwbuFfMZRYMWfNqTsF5IAh1FT)SVqoCGMlcR9sktqeEAS3vBuKvvoS7tdUUZqnUsplTUny0EvmsQZybHWWfs0IlNzSCApNk6GaYlLQyF)M(r8jAfatxbQWcLEIB9EH0fsOD03QxHM)H3b5J8Vu3beMyI6f75q2mKrl0Sv5CF9u0qrr8AJZ2UnqyNoi5Xs7rFkA1J622j48kB7HYRUCKHsHiFfmOn5B59Ll7hnV8XI7ARBtMeR7jDXMIMTUYWaH096q9GLbPBIbOKLbwiSuq(8omFlm5rmH0CiRZdiBellWpT6s8uOChKVkhY0lqwe9s4(uggCHCh2gibmiJwyGBJswXIA0peTfAtzdn78EmPp1RY4B5X17ywcrAoKMSv(Qt1hxeU)l8)p5R3UxjTgd14QNxX2IAHq83bpkSJoaM5xqvoyGfnpZOj3UaYLnlgcrvG4wH8NKjllzZBlVt43IH49B5qCxGrxrYEyCSCzYEiee4bb7yXB5IHh)0FpmgE11FpcYXWAPE9BDFdNVTil6ogrLTEyKxo(3h03AO7tZI4uU7SP6T0u12bKfLD5FYM63rtDdJ)wKM8(8SP79FtWIXoaJ2vQ3I4UR3F)lrvIMoQkVwzqvgdRw5tTC(VTzPBTzuU02f1Uw4Cv17wc1RhLBOzRT4Y5yxz4w0KyaMC7RhLhIDKgHnK6c2DEwrM6KXSRKdbRrmedX2fXBxmjIDPxkXjQGuxOQ2y(Ms(EjmrPX6s39C57xk5D7l41CZ0fXFvudDZ5Vmi5Bm57LWVuvWtKVFPKVMW34KWURRjXk05G7oGI6DGZyb7zWLliPTxilRVsRUTR2WBnD3tviIEp6)QeHIdQ(kfT23kQtUpPUdUZBNA83em1bvnkDHfzj7hBB6oPd00OzGPWtYUf(C2V(MUcVye)4N(zLsasS7kQ7mwBAvx7dVgVFWeiryEv6DIH1Hs9(z)j9B784NEZXLFn3k5XprTevd9d4T6mRvz0)G6UIMzCtPNcHknS1C7qLeA8hc3mZT)vVlVWTN9NFUdNepmRdpFd(Ay5j6SCBUsJLBlpnSmbx9qhIZxfhBbYU9S81SiwWY5UiAFon1dq)XnpcB8C9FBYELtOKPOQp7Zpx806ElV8b19vEhex7U16CfUO4X2ngD5kzFDrp)S59p9WS79Uq6S(iEewACZZAL7SKLVK42kF(zYlqCGhTG0bePkIANGZL1A3u31WhVEKxNd4HjJ8C45DGB(sRttRGbN3rJhfFpa2vPQqJhD5GvB2jcHNrLC)4KrDaDQIvxYD6Lq9JZg7qZXtFypm7UNFMUWUpm7wATM3GU3kaBHoNz33ofCieAPAkL9QS(eA6Rz0oqTYKE)dRp66gr(ugDDBf7AWKBy6uWSLIDVMV5nv(KXzfg)LKhHtL)oy1kggdUkL(ftEIN5hgVjhlTkspAoaixRUtwNVWM7negqLPvsdMi57(iZSjKkBZgFJTiToX3XQ4lzIhDjjUjVlzXDdk)bToAUW1eH9ip3xGQZLSDl4Ie)YlCwJYYdvK9HmCsQNUkEa4PVVX04V)ulVjyDBW5G2IpOAsZkpVk88YAL7woRNn27s9n46wiLEnvmtxKBIreAMvh07cYvQX6ozJQIaaAR19IsEcYchM0hom51fhgBe23Fy4GLbCJMUTFZ5A3llcxnlvDuxVPQtBAAK2(jBr)CPOiTtlN(OofVCZ0BC2s5NOry7Nnv5FxkIVS2CT)1aVtthq7jW6dvSigfCrGFs8Rl9dgDuvPb0o(aTbLxpZWlHhqelaOQz(jyxhcQrY(umN(3lSklaxzzxEsWUPi8Sd)9YjVF67CeeM6X0FW0vh0iJfR0FIrtC1AHN6rSt5uGl)yGRDA6WrIB4OhlaZMAV19a6PNyZZzqOTM)1DRD1(TgF)XfHI0(Y9bwLyM1FBYTFx1xKClty1JemkHhRsQ6EnJOGi6onYya9Sdc2QB0SxUIweREdvVt0iDmmDuJML7ivkjU92JYff9gx9z3PEu9TIxh5U4gJQi69nzYOtbkjPPlYOnz0DIAZMo6QX38UlCKT25XQTY1ZvusdAH76hUmI9xhsT6ziA1jA7x2lOwVwrhqDTl(scA20w2KthBTpa(WSBCeXYnLhT(JOZyA4y0HhMVLrV6GmTzdZ8aSp9E9gLXffunktRxA1DmTEVrlXOvqPHfHMG6ewACgQfv2ga0JS5WjOxvrHm91Rvjfi(qYYUO1g1d8A3i2xvPQCBhlkreboyIMh3QYUelo6i(D6ABd80y32UMuiMRo1MG)173BtMUn3rEMTfhuEEQLFE6arjyPGK8uWgS)2mwaxp0QYM1MyknTMD5jUtOzfBiJwm4nMQuwjmvjlmkrIc9BgD2KR962tttW3D1UIWOCz2DKlrQOSQnMaGqqgvfOMEBj6iRGpQhzbfyHWPf1DeHYI5SC5UKSfZX)NQKQ54w8)c]] )
