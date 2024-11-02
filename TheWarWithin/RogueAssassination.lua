@@ -2920,9 +2920,9 @@ spec:RegisterSetting( "fan_knives_critical_prediction", "predict", {
     name = strformat( "%s Critical Combo Point Prediction", Hekili:GetSpellLinkWithTexture( 51723 ) ),  -- Fan of Knives
     desc = strformat( "%sThis setting controls how %s predicts critical strikes for combo point generation.%s " ..
                       "|n|n%sThis option only works if the %s talent is selected.%s\n\n" ..
-                      "• Predict: Assumes a certain number of critical hits will occur based on your current critical strike chance and number of nearby enemies.\n" ..
-                      "• Predict Conservatively: The predicted number of combo points is reduced by 1 in order to prevent more jarring rotation changes from unlucky critical strikes.\n" ..
-                      "• Do Not Predict: Disables critical prediction, using only guaranteed combo points from casting %s.",
+                      "|cFF00FF00• Predict:|r Assumes a certain number of critical hits will occur based on your current critical strike chance and number of nearby enemies.\n\n" ..
+                      "|cFF00FF00• Predict Conservatively:|r The predicted number of combo points is reduced by 1 in order to prevent more jarring rotation changes from unlucky critical strikes.\n\n" ..
+                      "|cFF00FF00• Do Not Predict:|r Disables critical prediction, using only guaranteed combo points from casting %s.",
                       "|cFFFFD100", Hekili:GetSpellLinkWithTexture( 51723 ), "|r",
                       "|cFFFF0000", Hekili:GetSpellLinkWithTexture( 14190 ), "|r",
                       Hekili:GetSpellLinkWithTexture( 51723 )
