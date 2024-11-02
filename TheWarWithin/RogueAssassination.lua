@@ -2110,9 +2110,9 @@ spec:RegisterAbilities( {
             local fanCP = buff.clear_the_witnesses.up and 2 or 1
 
             -- Predict crit gains
-            if talent.seal_fate.enabled and settings.fok_critical_cp_prediction ~= "do_not_predict" then
+            if talent.seal_fate.enabled and settings.fan_knives_critical_prediction ~= "do_not_predict" then
                 -- calculate the crit chance of Fan of Knives then estimate 
-                fanCP = fanCP + max(0, floor( true_active_enemies * ( 0.01 * ( crit_pct_current + ( talent.deadly_precision.enabled and 5 or 0 ) + ( talent.thrown_precision.enabled and 5 or 0 ) + ( buff.momentum_of_despair.up and 10 or 0 ) + ( buff.master_assassin_any.up and 20 or 0 ) ) ) ) - ( settings.fok_critical_cp_prediction == "predict_conservatively" and 1 or 0 ) )
+                fanCP = fanCP + max(0, floor( true_active_enemies * ( 0.01 * ( crit_pct_current + ( talent.deadly_precision.enabled and 5 or 0 ) + ( talent.thrown_precision.enabled and 5 or 0 ) + ( buff.momentum_of_despair.up and 10 or 0 ) + ( buff.master_assassin_any.up and 20 or 0 ) ) ) ) - ( settings.fan_knives_critical_prediction == "predict_conservatively" and 1 or 0 ) )
 
             end
 
@@ -2175,8 +2175,10 @@ spec:RegisterAbilities( {
         cycle = "garrote",
 
         usable = function ()
-            if settings.max_garrote_spread > 0 and buff.indiscriminate_carnage_any.up then 
-            return ( active_dot.garrote < settings.max_garrote_spread ), strformat( "active Garrote DoTs higher than or equal to the user specified maximum of (%d)", settings.max_garrote_spread ) end
+            if debuff.garrote.refreshable then return true end
+            if settings.max_garrote_spread > 0 and buff.indiscriminate_carnage_any.up then
+                return ( active_dot.garrote < settings.max_garrote_spread ), strformat( "active Garrote DoTs higher than or equal to the user specified maximum of (%d)", settings.max_garrote_spread ) 
+            end
             return true
         end,
 
@@ -2914,7 +2916,7 @@ spec:RegisterStateExpr( "envenom_at_5cp", function ()
     return settings.envenom_pool_5_points and 1 or 0
 end )--]]
 
-spec:RegisterSetting( "fok_critical_cp_prediction", "predict", {
+spec:RegisterSetting( "fan_knives_critical_prediction", "predict", {
     name = strformat( "%s Critical Combo Point Prediction", Hekili:GetSpellLinkWithTexture( 51723 ) ),  -- Fan of Knives
     desc = strformat( "%sThis setting controls how %s predicts critical strikes for combo point generation.%s " ..
                       "|n|n%sThis option only works if the %s talent is selected.%s\n\n" ..
