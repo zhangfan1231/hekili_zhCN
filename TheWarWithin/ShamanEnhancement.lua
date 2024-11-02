@@ -210,7 +210,7 @@ spec:RegisterAuras( {
     },
     -- Your next 1 Chain Lightning or Lightning Bolt spells are instant cast and will deal 40% increased damage.
     arc_discharge = {
-        id = 455097,
+        id = 470532,
         duration = 15.0,
         max_stack = 1,
     },
