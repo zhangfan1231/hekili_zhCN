@@ -486,13 +486,21 @@ spec:RegisterStateExpr( "energy_spent", function ()
 end )
 
 spec:RegisterHook( "spend", function( amt, resource )
-    if legendary.duskwalkers_patch.enabled and cooldown.vendetta.remains > 0 and resource == "energy" and amt > 0 then
-        energy_spent = energy_spent + amt
-        local reduction = floor( energy_spent / 30 )
-        energy_spent = energy_spent % 30
+    if resource == "energy" and amt > 0 then
+        if legendary.duskwalkers_patch.enabled and cooldown.vendetta.remains > 0 then
+            energy_spent = energy_spent + amt
+            local reduction = floor( energy_spent / 30 )
+            energy_spent = energy_spent % 30
 
-        if reduction > 0 then
-            reduceCooldown( "vendetta", reduction )
+            if reduction > 0 then
+                reduceCooldown( "vendetta", reduction )
+            end
+        end
+
+        if talent.thistle_tea.enabled and energy.current < 30 and cooldown.thistle_tea.charges > 0 then
+            spendCharges( "thistle_tea", 1 )
+            gain( 100, "energy" )
+            applyBuff( "thistle_tea" )
         end
     end
 
@@ -528,11 +536,8 @@ end )
 
 spec:RegisterStateExpr( "persistent_multiplier", function ()
     if not this_action then return 1 end
-    local mult = 1
-
-    if this_action == "garrote" and ( buff.improved_garrote.up or talent.improved_garrote.enabled and buff.sepsis_buff.up ) then mult = mult * 1.5 end
-
-    return mult
+    if this_action == "garrote" and buff.improved_garrote_any.up then return 1.5 end
+    return 1
 end )
 
 -- Enemies with either Deadly Poison or Wound Poison applied.
@@ -2166,7 +2171,7 @@ spec:RegisterAbilities( {
     garrote = {
         id = 703,
         cast = 0,
-        cooldown = function () return ( buff.sepsis_buff.up or buff.improved_garrote.up ) and 0 or 6 end,
+        cooldown = function () return buff.improved_garrote_any.up and 0 or 6 end,
         gcd = "totem",
         school = "physical",
 
@@ -2192,7 +2197,7 @@ spec:RegisterAbilities( {
 
             if debuff.deathmark.up then
                 applyDebuff( "target", "garrote_deathmark" )
-                debuff.garrote_deathmark.pmultiplier = persistent_multiplier * ( buff.improved_garrote.up and 1.5 or 1 )
+                debuff.garrote_deathmark.pmultiplier = persistent_multiplier
             end
 
             if buff.indiscriminate_carnage_any.up then
