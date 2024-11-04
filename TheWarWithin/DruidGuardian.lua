@@ -51,7 +51,7 @@ spec:RegisterResource( Enum.PowerType.Rage, {
         end,
 
         interval = function () return class.auras.thrash_bear.tick_time end,
-        value = function () return 2 * state.active_dot.thrash_bear end,
+        value = function () return min( 15, 3 * state.active_dot.thrash_bear ) end,
     }
 } )
 spec:RegisterResource( Enum.PowerType.LunarPower )
@@ -489,7 +489,7 @@ spec:RegisterAuras( {
     ironfur = {
         id = 192081,
         duration = function() return 7 + ( buff.guardian_of_elune.up and 3 or 0 ) + ( talent.ursocs_endurance.enabled and 2 or 0 ) end,
-        max_stack = 5,
+        max_stack = 20,
     },
     -- Agility increased by $w1% and armor granted by Ironfur increased by $w2%.
     killing_strikes = {
@@ -575,6 +575,11 @@ spec:RegisterAuras( {
     ravage = {
         id = 441602,
         duration = 20,
+        max_stack = 1
+    },
+    -- fake buff for killing strikes "next mangle after entering combat grants ravage"
+    ravage_upon_combat = {
+        duration = 3600,
         max_stack = 1
     },
     -- Heals $w2 every $t2 sec.
@@ -703,7 +708,7 @@ spec:RegisterAuras( {
         id = 192090,
         duration = function () return mod_circle_dot( 15 ) * haste end,
         tick_time = function () return mod_circle_dot( 3 ) * haste end,
-        max_stack = function () return 3 + talent.untamed_savagery.rank end,
+        max_stack = function () return 3 + talent.flashing_claws.rank end,
         copy = "thrash"
     },
     -- Talent: Increased movement speed by $s1% while in Cat Form, reducing gradually over time.
@@ -1051,6 +1056,10 @@ spec:RegisterHook( "runHandler", function( ability )
     end
 end )
 
+spec:RegisterHook( "runHandler_startCombat", function()
+    if talent.killing_strikes.enabled then applyBuff( "ravage_upon_combat") end
+end )
+
 
 spec:RegisterHook( "spend", function( amt, resource )
     if resource == "rage" and amt > 0 then
@@ -1060,6 +1069,9 @@ spec:RegisterHook( "spend", function( amt, resource )
                 -- Heal ticked.
                 buff.after_the_wildfire.v1 = buff.after_the_wildfire.v1 + 200
             end
+        end
+        if amt > 25 and talent. ursocs_guidance.enabled and talent.incarnation_guardian_of_ursoc.enabled then
+            reduceCooldown( "incarnation", floor( amt / 25 ) ) -- you probably never spend 50+ rage in 1 cast, but just in case.
         end
     end
 end )
@@ -1175,6 +1187,7 @@ spec:RegisterAbilities( {
 
         handler = function ()
             applyBuff( "berserk" )
+            if talent.berserk_persistence.enabled then setCooldown( "frenzied_regeneration", 0 ) end
         end,
 
         copy = "berserk_bear"
@@ -1316,9 +1329,9 @@ spec:RegisterAbilities( {
     frenzied_regeneration = {
         id = 22842,
         cast = 0,
-        charges = function () return talent.innate_resolve.enabled and 2 or nil end,
-        cooldown = function () return 36 * ( buff.berserk.up and talent.berserk_persistence.enabled and 0 or 1 ) * ( 1 - 0.1 * talent.reinvigoration.rank ) end,
-        recharge = function () return talent.innate_resolve.enabled and ( 36 * ( buff.berserk.up and talent.berserk_persistence.enabled and 0 or 1 ) ) or nil end,
+        charges = function () if talent.innate_resolve.enabled then return 2 end end,
+        cooldown = function () return 36 * ( buff.berserk.up and talent.berserk_persistence.enabled and 0 or 1 ) * ( 1 - 0.1 * talent.reinvigoration.rank ) * haste end,
+        recharge = function () if talent.innate_resolve.enabled then return 36 * ( buff.berserk.up and talent.berserk_persistence.enabled and 0 or 1 ) * ( 1 - 0.1 * talent.reinvigoration.rank ) * haste end end,
         gcd = "spell",
         school = "physical",
 
@@ -1446,6 +1459,7 @@ spec:RegisterAbilities( {
 
         handler = function ()
             applyBuff( "incarnation" )
+            if talent.berserk_persistence.enabled then setCooldown( "frenzied_regeneration", 0 ) end
         end,
 
         copy = { "incarnation_guardian_of_ursoc", "Incarnation" }
@@ -1478,7 +1492,7 @@ spec:RegisterAbilities( {
         icd = function() return 7 / ( max_ironfur or 1 ) end,
         school = "nature",
 
-        spend = function () return ( buff.berserk_bear.up and talent.berserk_persistence.enabled and 20 or 40 ) * ( buff.gory_fur.up and 0.85 or 1 ) end,
+        spend = function () return ( buff.berserk_bear.up and talent.berserk_persistence.enabled and 20 or 40 ) * ( buff.gory_fur.up and 0.75 or 1 ) end,
         spendType = "rage",
 
         talent = "ironfur",
@@ -1500,7 +1514,7 @@ spec:RegisterAbilities( {
         end,
 
         handler = function ()
-            applyBuff( "ironfur" )
+            addStack( "ironfur", 1 )
             removeBuff( "gory_fur" )
             removeBuff( "guardian_of_elune" )
             if set_bonus.tier30_4pc > 0 then addStack( "indomitable_guardian" ) end
@@ -1565,21 +1579,28 @@ spec:RegisterAbilities( {
         end,
 
         handler = function ()
+            
+            -- Regular talents
             if talent.fluid_form.enabled and buff.bear_form.down then shift( "bear_form" ) end
-            if talent.wildpower_surge.enabled then addStack( "feline_potential_counter" ) end
-
-            removeBuff( "vicious_cycle_mangle" )
-            addStack( "vicious_cycle_maul" )
+            if talent.infected_wounds.enabled then applyDebuff( "target", "infected_wounds" ) end
+            if talent.vicious_cycle.enabled then
+                removeBuff( "vicious_cycle_mangle" )
+                addStack( "vicious_cycle_maul" )
+            end
             if talent.guardian_of_elune.enabled then applyBuff( "guardian_of_elune" ) end
 
             if buff.gore.up then
-                gain( 4, "rage" )
                 removeBuff( "gore" )
-
                 if set_bonus.tier29_4pc > 0 then applyBuff( "bloody_healing" ) end
             end
 
-            if talent.infected_wounds.enabled then applyDebuff( "target", "infected_wounds" ) end
+            -- Hero talents
+            if talent.wildpower_surge.enabled then addStack( "feline_potential_counter" ) end
+            if talent.killing_strikes.enabled and buff.ravage_upon_combat.up then
+                applyBuff( "ravage" )
+                removeBuff( "ravage_upon_combat" )
+            end
+            -- Legacy / PvP
             if conduit.savage_combatant.enabled then addStack( "savage_combatant", nil, 1 ) end
         end,
     },
@@ -1626,19 +1647,33 @@ spec:RegisterAbilities( {
         end,
 
         handler = function ()
-            addStack( "vicious_cycle_mangle" )
-            removeBuff( "savage_combatant" )
-            removeBuff( "vicious_cycle_maul" )
-            removeBuff( "ravage" )
 
+            -- Interactions for both Maul and Ravage
+            if talent.vicious_cycle.enabled then
+                removeBuff( "vicious_cycle_maul" )
+                addStack( "vicious_cycle_mangle" )
+            end
+            if talent.infected_wounds.enabled then applyDebuff( "target", "infected_wounds" ) end
+            if talent.ursocs_fury.enabled then applyBuff( "ursocs_fury" ) end
             if buff.tooth_and_claw.up then
                 removeStack( "tooth_and_claw" )
                 applyDebuff( "target", "tooth_and_claw_debuff" )
             end
+
+            -- Ravage specific interactions
+            if talent.ravage.enabled and buff.ravage.up then
+                removeBuff( "ravage" )
+                if talent.dreadful_wound.enabled then applyDebuff( "target", "dreadful_wound" ) end
+                if talent.ruthless_aggression.enabled then applyBuff( "ruthless_aggression" ) end
+                if talent.killing_strikes.enabled then applyBuff( "killing_strikes" ) end
+
+            end
+
+            -- Legacy / PvP         
+            if conduit.savage_combatant.enabled then removeBuff( "savage_combatant" ) end
             if set_bonus.tier30_4pc > 0 then addStack( "indomitable_guardian" ) end
-            if talent.infected_wounds.enabled then applyDebuff( "target", "infected_wounds" ) end
-            if talent.ursocs_fury.enabled then applyBuff( "ursocs_fury" ) end
             if pvptalent.sharpened_claws.enabled or essence.conflict_and_strife.major then applyBuff( "sharpened_claws" ) end
+
         end,
 
         copy = { 6807, "ravage", 441605}
@@ -1686,6 +1721,8 @@ spec:RegisterAbilities( {
             if talent.twin_moonfire.enabled then
                 active_dot.moonfire = min( true_active_enemies, active_dot.moonfire + 1 )
             end
+
+            if talent.lunation.enabled then reduceCooldown( "lunar_beam", 3 ) end
         end,
 
         copy = 155625
@@ -1730,7 +1767,7 @@ spec:RegisterAbilities( {
     pulverize = {
         id = 80313,
         cast = 0,
-        cooldown = function() return 45 - 5 * talent.tear_down_the_mighty.rank end,
+        cooldown = function() return 45 - 10 * talent.tear_down_the_mighty.rank end,
         gcd = "spell",
         school = "physical",
 
@@ -1750,7 +1787,7 @@ spec:RegisterAbilities( {
         handler = function ()
             if debuff.thrash_bear.count > 2 then debuff.thrash_bear.count = debuff.thrash_bear.count - 2
             else removeDebuff( "target", "thrash_bear" ) end
-            applyBuff( "pulverize" )
+            applyDebuff( "target", "pulverize" )
         end,
     },
 
@@ -1799,17 +1836,26 @@ spec:RegisterAbilities( {
         end,
 
         handler = function ()
-            addStack( "vicious_cycle_mangle" )
-            removeBuff( "savage_combatant" )
-            removeBuff( "vicious_cycle_maul" )
+
+            if talent.vicious_cycle.enabled then
+                addStack( "vicious_cycle_mangle" )
+                removeBuff( "vicious_cycle_maul" )
+            end
             if buff.tooth_and_claw.up then
                 removeStack( "tooth_and_claw" )
                 applyDebuff( "target", "tooth_and_claw_debuff" )
             end
-            if set_bonus.tier30_4pc > 0 then addStack( "indomitable_guardian" ) end
+
+            if talent.aggravate_wounds.enabled and debuff.dreadful_wound.up then
+                debuff.dreadful_wound.expires = debuff.dreadful_wound.expires + 0.6
+            end
             if talent.infected_wounds.enabled then applyDebuff( "target", "infected_wounds" ) end
             if talent.ursocs_fury.enabled then applyBuff( "ursocs_fury" ) end
+
+            -- Legacy / PvP
             if pvptalent.sharpened_claws.enabled or essence.conflict_and_strife.major then applyBuff( "sharpened_claws" ) end
+            if set_bonus.tier30_4pc > 0 then addStack( "indomitable_guardian" ) end
+            if conduit.savage_combatant.enabled then removeBuff( "savage_combatant" ) end
         end,
     },
 
@@ -2062,6 +2108,9 @@ spec:RegisterAbilities( {
         startsCombat = true,
 
         handler = function ()
+            if talent.aggravate_wounds.enabled and debuff.dreadful_wound.up then
+                debuff.dreadful_wound.expires = debuff.dreadful_wound.expires + 0.6
+            end
         end,
 
         form = "bear_form",
@@ -2076,9 +2125,11 @@ spec:RegisterAbilities( {
         known = 106832,
         suffix = "(Bear)",
         cast = 0,
-        cooldown = function () return ( buff.berserk_bear.up and talent.berserk_ravage.enabled and 0 or 6 ) * haste end,
+        cooldown = function () return 6 * ( buff.berserk_bear.up and talent.berserk_ravage.enabled and 0.5 or 1 ) * haste end,
         gcd = "spell",
-        school = "physical",
+        school = function() return talent.lunar_calling.enabled and "arcane" or "physical" end,
+
+        range = function() return 8 * ( 1.25 * talent.untamed_savagery.rank ) end,
 
         spend = function() return -5 * ( buff.furious_regeneration.up and 1.15 or 1 ) end,
         spendType = "rage",
@@ -2094,11 +2145,19 @@ spec:RegisterAbilities( {
             active_dot.thrash_bear = active_enemies
 
             if talent.ursocs_fury.enabled then applyBuff( "ursocs_fury" ) end
+            if talent.aggravate_wounds.enabled and debuff.dreadful_wound.up then
+                debuff.dreadful_wound.expires = debuff.dreadful_wound.expires + 0.6
+            end
+            if talent.earthwarden.enabled then addStack( "earthwarden", nil, ( min( 3, active_enemies ) ) ) end
+
+            if talent.bloody_frenzy.enabled then gain( min( 15, 3 * active_enemies ), rage) end
+
             if legendary.ursocs_fury_remembered.enabled then
                 applyBuff( "ursocs_fury_remembered" )
             end
 
-            if talent.earthwarden.enabled then addStack( "earthwarden", nil, 1 ) end
+            if talent.lunation.enabled and talent.lunar_calling.enabled then reduceCooldown( "lunar_beam", 3 ) end
+
         end,
     },
 

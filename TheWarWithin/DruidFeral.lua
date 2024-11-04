@@ -432,9 +432,10 @@ spec:RegisterAuras( {
     -- Bleeding for $w1 damage every $t1 seconds. Weakened, dealing $w2% less damage to $@auracaster.
     dreadful_wound = {
         id = 451177,
-        duration = mod_circle_dot( 6.0 ),
-        tick_time = mod_circle_dot( 2.0 ),
+        duration = 6,
+        tick_time = 2,
         pandemic = true,
+        mechanic = "bleed",
         max_stack = 1,
 
         -- Affected by:
