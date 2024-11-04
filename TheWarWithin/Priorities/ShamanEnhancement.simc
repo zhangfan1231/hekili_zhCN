@@ -39,6 +39,8 @@ actions.single+=/primordial_wave,if=!dot.flame_shock.ticking&talent.molten_assau
 actions.single+=/lava_lash,if=talent.lashing_flames.enabled&debuff.lashing_flames.down
 actions.single+=/stormstrike,if=buff.maelstrom_weapon.stack<2&cooldown.ascendance.remains=0
 actions.single+=/feral_spirit
+# [Hekili] Avoid delaying Ascendance due to Thorim's Invocation
+actions.single+=/lightning_bolt,if=cast_time=0&talent.ascendance&cooldown.ascendance.remains<2*gcd&talent.thorims_invocation&!ti_lightning_bolt
 actions.single+=/ascendance,if=dot.flame_shock.ticking&ti_lightning_bolt&active_enemies=1&buff.maelstrom_weapon.stack>=2
 actions.single+=/tempest,if=buff.maelstrom_weapon.stack=buff.maelstrom_weapon.max_stack|(buff.tempest.stack=buff.tempest.max_stack&(tempest_mael_count>30|buff.awakening_storms.stack=2)&buff.maelstrom_weapon.stack>=5)
 actions.single+=/elemental_blast,if=buff.maelstrom_weapon.stack=buff.maelstrom_weapon.max_stack&talent.elemental_spirits.enabled&feral_spirit.active>=6&(charges_fractional>=1.8|buff.ascendance.up)
@@ -93,6 +95,8 @@ actions.single+=/earth_elemental
 actions.single+=/flame_shock,if=settings.filler_shock
 
 actions.single_totemic+=/surging_totem
+# [Hekili] Avoid delaying Ascendance due to Thorim's Invocation
+actions.single_totemic+=/lightning_bolt,if=cast_time=0&talent.ascendance&cooldown.ascendance.remains<2*gcd&talent.thorims_invocation&!ti_lightning_bolt
 actions.single_totemic+=/ascendance,if=ti_lightning_bolt&pet.surging_totem.remains>4&(buff.totemic_rebound.stack>=3|buff.maelstrom_weapon.up)
 actions.single_totemic+=/doom_winds,if=!talent.elemental_spirits.enabled&buff.legacy_of_the_frost_witch.up
 actions.single_totemic+=/sundering,if=buff.ascendance.up&pet.surging_totem.active&talent.earthsurge.enabled&buff.legacy_of_the_frost_witch.up&buff.totemic_rebound.stack>=5&buff.earthen_weapon.stack>=2
@@ -135,6 +139,8 @@ actions.single_totemic+=/earth_elemental
 actions.single_totemic+=/flame_shock,if=!talent.voltaic_blaze.enabled
 
 actions.aoe+=/feral_spirit,if=talent.elemental_spirits.enabled|talent.alpha_wolf.enabled
+# [Hekili] Avoid delaying Ascendance due to Thorim's Invocation
+actions.aoe+=/chain_lightning,if=cast_time=0&talent.ascendance&cooldown.ascendance.remains<2*gcd&talent.thorims_invocation&!ti_chain_lightning
 actions.aoe+=/ascendance,if=dot.flame_shock.ticking&ti_chain_lightning
 actions.aoe+=/tempest,cycle_targets=1,if=!buff.arc_discharge.up&((buff.maelstrom_weapon.stack=buff.maelstrom_weapon.max_stack&!talent.raging_maelstrom.enabled)|(buff.maelstrom_weapon.stack>=8))|(buff.maelstrom_weapon.stack>=5&(tempest_mael_count>30|buff.awakening_storms.stack=2))
 actions.aoe+=/windstrike,cycle_targets=1,if=talent.thorims_invocation.enabled&buff.maelstrom_weapon.stack>0&ti_chain_lightning
@@ -175,6 +181,8 @@ actions.aoe+=/flame_shock,if=!ticking
 actions.aoe+=/frost_shock,if=!talent.hailstorm.enabled
 
 actions.aoe_totemic+=/surging_totem
+# [Hekili] Avoid delaying Ascendance due to Thorim's Invocation
+actions.aoe_totemic+=/chain_lightning,if=cast_time=0&talent.ascendance&cooldown.ascendance.remains<2*gcd&talent.thorims_invocation&!ti_chain_lightning
 actions.aoe_totemic+=/ascendance,if=ti_chain_lightning
 actions.aoe_totemic+=/sundering,if=buff.ascendance.up&pet.surging_totem.active&talent.earthsurge.enabled&(buff.legacy_of_the_frost_witch.up|!talent.legacy_of_the_frost_witch.enabled)
 actions.aoe_totemic+=/crash_lightning,if=talent.crashing_storms.enabled&(active_enemies>=15-5*talent.unruly_winds.enabled)
@@ -225,7 +233,7 @@ actions.funnel+=/elemental_blast,if=(!talent.elemental_spirits.enabled|(talent.e
 actions.funnel+=/feral_spirit
 actions.funnel+=/doom_winds
 actions.funnel+=/stormstrike,if=buff.converging_storms.stack=buff.converging_storms.max_stack
-actions.funnel+=/lava_burst,if=(buff.molten_weapon.stack+buff.volcanic_strength.up>buff.crackling_surge.stack)&buff.maelstrom_weapon.stack=buff.maelstrom_weapon.max_stack
+actions.funnel+=/lava_burst,if=(buff.molten_weapon.stack>buff.crackling_surge.stack)&buff.maelstrom_weapon.stack=buff.maelstrom_weapon.max_stack
 actions.funnel+=/lightning_bolt,if=buff.maelstrom_weapon.stack=buff.maelstrom_weapon.max_stack&(variable.expected_lb_funnel>variable.expected_cl_funnel)
 actions.funnel+=/chain_lightning,if=buff.maelstrom_weapon.stack=buff.maelstrom_weapon.max_stack
 actions.funnel+=/crash_lightning,if=buff.doom_winds.up|!buff.crash_lightning.up|(talent.alpha_wolf.enabled&feral_spirit.active&alpha_wolf_min_remains=0)|(talent.converging_storms.enabled&buff.converging_storms.stack<buff.converging_storms.max_stack)
@@ -246,7 +254,7 @@ actions.funnel+=/lava_lash
 actions.funnel+=/crash_lightning
 actions.funnel+=/fire_nova,if=active_dot.flame_shock>=2
 actions.funnel+=/elemental_blast,if=(!talent.elemental_spirits.enabled|(talent.elemental_spirits.enabled&(charges=max_charges|buff.feral_spirit.up)))&buff.maelstrom_weapon.stack>=5
-actions.funnel+=/lava_burst,if=(buff.molten_weapon.stack+buff.volcanic_strength.up>buff.crackling_surge.stack)&buff.maelstrom_weapon.stack>=5
+actions.funnel+=/lava_burst,if=(buff.molten_weapon.stack>buff.crackling_surge.stack)&buff.maelstrom_weapon.stack>=5
 actions.funnel+=/lightning_bolt,if=buff.maelstrom_weapon.stack>=5&(variable.expected_lb_funnel>variable.expected_cl_funnel)
 actions.funnel+=/chain_lightning,if=buff.maelstrom_weapon.stack>=5
 actions.funnel+=/flame_shock,if=!ticking
