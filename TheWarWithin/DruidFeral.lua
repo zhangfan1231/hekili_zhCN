@@ -1159,7 +1159,7 @@ spec:RegisterStateFunction( "shift", function( form )
 end )
 
 spec:RegisterHook( "runHandler_startCombat", function()
-    if talent.killing_strikes.enabled then applyBuff( "ravage_upon_combat") end
+    if talent.killing_strikes.enabled then applyBuff( "ravage_upon_combat" ) end
 end )
 
 spec:RegisterHook( "runHandler", function( ability )
@@ -1308,7 +1308,6 @@ spec:RegisterHook( "reset_precast", function ()
 
     if buff.jungle_stalker.up then buff.jungle_stalker.expires = buff.bs_inc.expires end
 
-
     if buff.bs_inc.up then
         if talent.ashamanes_guidance.enabled then buff.ashamanes_frenzy.expires = buff.bs_inc.expires + 40 end
 
@@ -1322,11 +1321,6 @@ spec:RegisterHook( "reset_precast", function ()
         end
     end
 
-
-    --[[ if buff.lycaras_fleeting_glimpse.up then
-        state:QueueAuraExpiration( "lycaras_fleeting_glimpse", LycarasHandler, buff.lycaras_fleeting_glimpse.expires )
-    end ]]
-
     if legendary.sinful_hysteria.enabled and buff.ravenous_frenzy.up then
         state:QueueAuraExpiration( "ravenous_frenzy", SinfulHysteriaHandler, buff.ravenous_frenzy.expires )
     end
@@ -1334,21 +1328,19 @@ end )
 
 spec:RegisterHook( "gain", function( amt, resource )
     if amt > 0 and resource == "combo_points" then
-        if combo_points.deficit < amt and buff.bs_inc.up then
-            addStack( "overflowing_power", nil, amt - combo_points.deficit )
+        if combo_points.deficit < amt then -- excess points
+        local combo_points_to_store = amt - combo_points.deficit
+            if buff.overflowing_power.stack > ( 3 - combo_points_to_store ) or buff.bs_inc.down then -- unable to store them all
+                applyBuff( "coiled_to_spring" )
+            end
+            if buff.bs_inc.up then addStack( "overflowing_power", nil, combo_points_to_store ) end -- store as many as possible
         end
-        --[[if buff.bs_inc.up and buff.overflowing_power.applied == 0 and combo_points.deficit - amt <= 0 then
-            local partial = max( 0, ( query_time - buff.bs_inc.applied ) % 1.5 )
-            applyBuff( "overflowing_power", buff.bs_inc.remains + partial, 0, nil, nil, nil, query_time - partial )
-        end--]]
     end
-    -- TODO: Proc Coiled to Spring if Overflowing Power is maxed.
     if azerite.untamed_ferocity.enabled and amt > 0 and resource == "combo_points" then
         if talent.incarnation.enabled then gainChargeTime( "incarnation", 0.2 )
         else gainChargeTime( "berserk", 0.3 ) end
     end
 end )
-
 
 local function comboSpender( a, r )
     if r == "combo_points" and a > 0 then
@@ -2534,7 +2526,7 @@ spec:RegisterAbilities( {
         end,
 
         damage = function ()
-            return calculate_damage( 1.025, false, true, ( talent.pouncing_strikes.enabled and effective_stealth and class.auras.prowl.multiplier or 1 ) * ( 1 + ( talent.instincts_of_the_claw.rank * 0.05)  ) * ( talent.empowered_shapeshifting and 1.06 or 1 ) * ( talent.merciless_claws.enabled and bleeding and 1.2 or 1 ) * ( buff.clearcasting.up and class.auras.clearcasting.multiplier or 1 ) * ( talent.berserk.enabled and buff.bs_inc.up and class.auras.berserk.multiplier or 1 ) )
+            return calculate_damage( 1.025, false, true, ( talent.pouncing_strikes.enabled and effective_stealth and class.auras.prowl.multiplier or 1 ) * ( 1 + ( talent.instincts_of_the_claw.rank * 0.05 )  ) * ( talent.empowered_shapeshifting and 1.06 or 1 ) * ( talent.merciless_claws.enabled and bleeding and 1.2 or 1 ) * ( buff.clearcasting.up and class.auras.clearcasting.multiplier or 1 ) * ( talent.berserk.enabled and buff.bs_inc.up and class.auras.berserk.multiplier or 1 ) )
         end,
 
         -- This will override action.X.cost to avoid a non-zero return value, as APL compares damage/cost with Shred.

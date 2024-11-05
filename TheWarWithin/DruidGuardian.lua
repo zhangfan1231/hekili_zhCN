@@ -2150,7 +2150,7 @@ spec:RegisterAbilities( {
             end
             if talent.earthwarden.enabled then addStack( "earthwarden", nil, ( min( 3, active_enemies ) ) ) end
 
-            if talent.bloody_frenzy.enabled then gain( min( 15, 3 * active_enemies ), rage) end
+            if talent.bloody_frenzy.enabled then gain( min( 15, 3 * active_enemies ), rage ) end
 
             if legendary.ursocs_fury_remembered.enabled then
                 applyBuff( "ursocs_fury_remembered" )
