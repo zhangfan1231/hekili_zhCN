@@ -337,10 +337,9 @@ spec:RegisterAuras( {
     },
     overflowing_power = {
         id = 405189,
-        duration = function () return talent.incarnation.enabled and 30 or 20 end,
+        duration = 10,
         max_stack = 3,
-        copy = "berserk_overflow",
-        meta = {
+        --[[meta = {
             stack = function( t )
                 if buff.bs_inc.down then return 0 end
                 local deficit = combo_points.deficit
@@ -350,7 +349,7 @@ spec:RegisterAuras( {
             stacks = function( t )
                 return t.stack
             end
-        }
+        }--]]
     },
 
     -- Alias for Berserk vs. Incarnation
@@ -358,7 +357,7 @@ spec:RegisterAuras( {
         alias = { "berserk", "incarnation" },
         aliasMode = "first", -- use duration info from the first buff that's up, as they should all be equal.
         aliasType = "buff",
-        duration = function () return talent.incarnation.enabled and 30 or 20 end,
+        duration = function () return talent.incarnation.enabled and 20 or 15 end,
     },
     bloodtalons = {
         id = 145152,
@@ -533,7 +532,7 @@ spec:RegisterAuras( {
     -- https://wowhead.com/beta/spell=102543
     incarnation_avatar_of_ashamane = {
         id = 102543,
-        duration = 30,
+        duration = 20,
         max_stack = 1,
         copy = { "incarnation", "incarnation_king_of_the_jungle" }
     },
@@ -701,6 +700,10 @@ spec:RegisterAuras( {
         duration = 20,
         max_stack = 1,
         copy = "ravage_fb"
+    },
+    ravage_upon_combat = {
+        duration = 3600,
+        max_stack = 1
     },
     -- Heals $w2 every $t2 sec.
     -- https://wowhead.com/beta/spell=8936
@@ -876,7 +879,7 @@ spec:RegisterAuras( {
     -- https://wowhead.com/beta/spell=5217
     tigers_fury = {
         id = 5217,
-        duration = function() return ( talent.predator.enabled and 15 or 10 ) + ( talent.raging_fury.enabled and 5 or 0 ) end,
+        duration = function() return 10 + ( talent.predator.enabled and 5 or 0 ) + ( talent.raging_fury.enabled and 5 or 0 ) end,
         multiplier = function() return 1.15 + state.conduit.carnivorous_instinct.mod * 0.01 + state.talent.carnivorous_instinct.rank * 0.06 end,
     },
     -- Talent: Your next finishing move restores $391874s1 combo $Lpoint:points;.
@@ -1051,9 +1054,9 @@ spec:RegisterEvent( "PLAYER_REGEN_ENABLED", function ()
     rip_applied = false
 end )
 
-spec:RegisterStateExpr( "opener_done", function ()
+--[[spec:RegisterStateExpr( "opener_done", function ()
     return rip_applied
-end )
+end )--]]
 
 
 local last_bloodtalons_proc = 0
@@ -1155,6 +1158,9 @@ spec:RegisterStateFunction( "shift", function( form )
     end
 end )
 
+spec:RegisterHook( "runHandler_startCombat", function()
+    if talent.killing_strikes.enabled then applyBuff( "ravage_upon_combat") end
+end )
 
 spec:RegisterHook( "runHandler", function( ability )
     local a = class.abilities[ ability ]
@@ -1163,10 +1169,15 @@ spec:RegisterHook( "runHandler", function( ability )
         break_stealth()
     end
 
-    if buff.ravenous_frenzy.up and ability ~= "ravenous_frenzy" then
+    if talent.aggravate_wounds.enabled and debuff.dreadful_wound.up and a.spendType == "energy" and a.spend > 0 then
+        debuff.dreadful_wound.expires = debuff.dreadful_wound.expires + 0.6
+    end
+
+    if covenant.venthyr and buff.ravenous_frenzy.up and ability ~= "ravenous_frenzy" then
         stat.haste = stat.haste + 0.01
         addStack( "ravenous_frenzy", nil, 1 )
     end
+
 end )
 
 
@@ -1261,6 +1272,10 @@ local SinfulHysteriaHandler = setfenv( function ()
 end, state )
 
 
+local IncarnationComboPointPeriodic = setfenv( function()
+    gain( 1, "combo_point" )
+end, state )
+
 spec:RegisterHook( "reset_precast", function ()
     if buff.cat_form.down then
         energy.regen = 10 + ( stat.haste * 10 )
@@ -1288,11 +1303,25 @@ spec:RegisterHook( "reset_precast", function ()
         gain( 5, "combo_points" )
     end
 
-    opener_done = nil
+    -- opener_done = nil
     last_bloodtalons = nil
 
     if buff.jungle_stalker.up then buff.jungle_stalker.expires = buff.bs_inc.expires end
-    if talent.ashamanes_guidance.enabled and buff.incarnation.up then buff.ashamanes_frenzy.expires = buff.bs_inc.expires + 40 end
+
+
+    if buff.bs_inc.up then
+        if talent.ashamanes_guidance.enabled then buff.ashamanes_frenzy.expires = buff.bs_inc.expires + 40 end
+
+        -- Queue combo point gain events every 1.5 seconds while Incarnation/Berserk is active, starting 1.5 seconds after cast
+        local tick, expires = buff.bs_inc.applied, buff.bs_inc.expires
+        for i = 1.5, expires - query_time, 1.5 do
+            tick = query_time + i
+            if tick < expires then
+                state:QueueAuraEvent( "incarnation_combo_point_perodic", IncarnationComboPointPeriodic, tick, "AURA_TICK" )
+            end
+        end
+    end
+
 
     --[[ if buff.lycaras_fleeting_glimpse.up then
         state:QueueAuraExpiration( "lycaras_fleeting_glimpse", LycarasHandler, buff.lycaras_fleeting_glimpse.expires )
@@ -1304,9 +1333,14 @@ spec:RegisterHook( "reset_precast", function ()
 end )
 
 spec:RegisterHook( "gain", function( amt, resource )
-    if amt > 0 and resource == "combo_points" and buff.bs_inc.up and buff.overflowing_power.applied == 0 and combo_points.deficit - amt <= 0 then
-        local partial = max( 0, ( query_time - buff.bs_inc.applied ) % 1.5 )
-        applyBuff( "overflowing_power", buff.bs_inc.remains + partial, 0, nil, nil, nil, query_time - partial )
+    if amt > 0 and resource == "combo_points" then
+        if combo_points.deficit < amt and buff.bs_inc.up then
+            addStack( "overflowing_power", nil, amt - combo_points.deficit )
+        end
+        --[[if buff.bs_inc.up and buff.overflowing_power.applied == 0 and combo_points.deficit - amt <= 0 then
+            local partial = max( 0, ( query_time - buff.bs_inc.applied ) % 1.5 )
+            applyBuff( "overflowing_power", buff.bs_inc.remains + partial, 0, nil, nil, nil, query_time - partial )
+        end--]]
     end
     -- TODO: Proc Coiled to Spring if Overflowing Power is maxed.
     if azerite.untamed_ferocity.enabled and amt > 0 and resource == "combo_points" then
@@ -1319,7 +1353,7 @@ end )
 local function comboSpender( a, r )
     if r == "combo_points" and a > 0 then
         if talent.soul_of_the_forest.enabled then
-            gain( a * 3, "energy" )
+            gain( a * 2, "energy" )
         end
 
         if buff.overflowing_power.up then
@@ -1327,25 +1361,18 @@ local function comboSpender( a, r )
             removeBuff( "overflowing_power" )
         end
 
-        if legendary.frenzyband.enabled then
-            reduceCooldown( talent.incarnation.enabled and "incarnation" or "berserk", 0.3 )
-        end
-
-        if talent.berserk_heart_of_the_lion.enabled and buff.bs_inc.up then
-            reduceCooldown( talent.incarnation.enabled and "incarnation" or "berserk", 0.5 )
-        end
-
-        if talent.raging_fury.enabled and buff.tigers_fury.up then
-            buff.tigers_fury.expires = buff.tigers_fury.expires + 0.4 * a
-        end
-
         if buff.tigers_tenacity.up then
             removeStack( "tigers_tenacity" )
             gain( 1, "combo_points" )
         end
 
-        if a >= 5 then
+        if talent.predatory_swiftness.enabled and a >= 5 then
             applyBuff( "predatory_swiftness" )
+        end
+
+        -- Legacy
+        if legendary.frenzyband.enabled then
+            reduceCooldown( talent.incarnation.enabled and "incarnation" or "berserk", 0.3 )
         end
 
         if set_bonus.tier29_4pc > 0 then
@@ -1590,7 +1617,9 @@ spec:RegisterAbilities( {
         handler = function ()
             if buff.cat_form.down then shift( "cat_form" ) end
             applyBuff( "berserk" )
-            applyBuff( "overflowing_power", nil, 0 )
+            for i = 1.5, spec.auras.berserk.duration, 1.5 do
+                state:QueueAuraEvent( "incarnation_combo_point_periodic", IncarnationComboPointPeriodic, query_time + i, "AURA_TICK" )
+            end
         end,
 
         copy = { "berserk_cat", "bs_inc" }
@@ -1609,7 +1638,7 @@ spec:RegisterAbilities( {
 
         spend = function ()
             if buff.clearcasting.up then return 0 end
-            return max( 0, 25 * ( buff.incarnation.up and 0.75 or 1 ) + buff.scent_of_blood.v1 )
+            return 25 * ( buff.incarnation.up and 0.75 or 1 )
         end,
         spendType = "energy",
 
@@ -1628,7 +1657,7 @@ spec:RegisterAbilities( {
         cost = function () return max( 1, class.abilities.brutal_slash.spend ) end,
 
         handler = function ()
-            gain( talent.berserk.enabled and buff.bs_inc.up and 2 or 1, "combo_points" )
+            gain( talent.berserk.enabled and buff.bs_inc.up and 2 or 1 + ( allow_crit_prediction and crit_pct_current * active_enemies >= 230 and 1 or 0 ), "combo_points" )
             if buff.bs_inc.up and talent.berserk_frenzy.enabled then applyDebuff( "target", "frenzied_assault" ) end
 
             if talent.bloodtalons.enabled then
@@ -1636,9 +1665,11 @@ spec:RegisterAbilities( {
                 check_bloodtalons()
             end
 
-            if talent.cats_curiosity.enabled and buff.clearcasting.up then
-                gain( 25 * 0.25, "energy" )
+            if talent.thrashing_claws.enabled and talent.thrash.enabled then
+                applyDebuff( "target", "thrash_cat" ) 
+                active_dot.thrash_cat = min( true_active_enemies, active_dot.thrash_cat + active_enemies  )
             end
+            
             removeStack( "clearcasting" )
         end,
     },
@@ -1808,9 +1839,9 @@ spec:RegisterAbilities( {
         cycle_to = true,
 
         -- Use maximum damage.
-        damage = function () -- TODO: Taste For Blood soulbind conduit
+        damage = function () 
             return calculate_damage( 1.45 * 2 , true, true ) * ( buff.bloodtalons.up and class.auras.bloodtalons.multiplier or 1 ) * ( talent.sabertooth.enabled and 1.15 or 1 ) * ( talent.soul_of_the_forest.enabled and 1.05 or 1 ) * ( talent.lions_strength.enabled and 1.15 or 1 ) *
-                ( 1 + 0.05 * talent.taste_for_blood.rank * ( ( debuff.rip.up and 1 or 0 ) + ( debuff.tear.up and 1 or 0 ) + ( debuff.thrash_cat.up and 1 or 0 ) + ( debuff.sickle_of_the_lion.up and 1 or 0 ) ) )
+                ( 1 + ( talent.taste_for_blood.enabled and ( buff.tigers_fury.up and 0.24 or 0.12 ) or 0 ) ) * ( talent.bestial_strength.enabled and 1.1 or 1 ) * ( buff.coiled_to_spring.up and 1.1 or 1 )
         end,
 
         -- This will override action.X.cost to avoid a non-zero return value, as APL compares damage/cost with Shred.
@@ -1819,12 +1850,10 @@ spec:RegisterAbilities( {
         usable = function () return buff.apex_predator.up or buff.apex_predators_craving.up or combo_points.current > 0 end,
 
         handler = function ()
-            removeBuff( "coiled_to_spring" )
-            removeBuff( "ravage" )
-
-            if pvptalent.ferocious_wound.enabled and combo_points.current >= 5 then
-                applyDebuff( "target", "ferocious_wound", nil, min( 2, debuff.ferocious_wound.stack + 1 ) )
-            end
+            if talent.coiled_to_spring.enabled then removeBuff( "coiled_to_spring" ) end
+            if talent.ravage.enabled then removeBuff( "ravage" ) end
+            if talent.bloodtalons.enabled then removeStack( "bloodtalons" ) end
+            if talent.sabertooth.enabled then applyDebuff( "target", "sabertooth" ) end
 
             if buff.apex_predator.up or buff.apex_predators_craving.up then
                 applyBuff( "predatory_swiftness" )
@@ -1834,16 +1863,15 @@ spec:RegisterAbilities( {
                 spend( min( 5, combo_points.current ), "combo_points" )
             end
 
-            removeStack( "bloodtalons" )
-
-            if buff.eye_of_fearful_symmetry.up then
+            --Legacy / PvP
+            if legendary.eye_of_fearful_symmetry.enabled and buff.eye_of_fearful_symmetry.up then
                 gain( 2, "combo_points" )
                 removeStack( "eye_of_fearful_symmetry" )
             end
-
-            if talent.sabertooth.enabled then applyDebuff( "target", "sabertooth" ) end
-
-            opener_done = true
+            if pvptalent.ferocious_wound.enabled and combo_points.current >= 5 then
+                applyDebuff( "target", "ferocious_wound", nil, min( 2, debuff.ferocious_wound.stack + 1 ) )
+            end
+            -- opener_done = true
         end,
 
         copy = { 22568, "ferocious_bite_max", 441591, "ravage" }
@@ -1966,8 +1994,11 @@ spec:RegisterAbilities( {
             applyBuff( "jungle_stalker" )
             if talent.ashamanes_guidance.enabled then applyBuff( "ashamanes_guidance", buff.incarnation.remains + 40 ) end
             setCooldown( "prowl", 0 )
-            applyBuff( "overflowing_power", nil, 0 )
-            energy.max = energy.max + 50
+
+            for i = 1.5, spec.auras.incarnation.duration, 1.5 do
+                state:QueueAuraEvent( "incarnation_combo_point_periodic", IncarnationComboPointPeriodic, query_time + i, "AURA_TICK" )
+            end
+
         end,
 
         copy = { "incarnation_avatar_of_ashamane", "Incarnation" }
@@ -2016,12 +2047,12 @@ spec:RegisterAbilities( {
 
             removeBuff( "iron_jaws" )
 
-            if buff.eye_of_fearful_symmetry.up then
+            if legendary.eye_of_fearful_symmetry.enabled and buff.eye_of_fearful_symmetry.up then
                 gain( 2, "combo_points" )
                 removeStack( "eye_of_fearful_symmetry" )
             end
 
-            opener_done = true
+            -- opener_done = true
         end,
     },
 
@@ -2129,7 +2160,7 @@ spec:RegisterAbilities( {
         handler = function ()
             applyDebuff( "target", "lunar_inspiration" )
             debuff.lunar_inspiration.pmultiplier = persistent_multiplier
-            gain( talent.berserk.enabled and buff.bs_inc.up and 2 or 1, "combo_points" )
+            gain( talent.berserk.enabled and buff.bs_inc.up and 2 or 1 + ( allow_crit_prediction and crit_pct_current >= 95 and 1 or 0 ), "combo_points" )
             if buff.bs_inc.up and talent.berserk_frenzy.enabled then applyDebuff( "target", "frenzied_assault" ) end
 
             if talent.bloodtalons.enabled then
@@ -2218,24 +2249,20 @@ spec:RegisterAbilities( {
 
         usable = function () return combo_points.current > 0, "no combo points" end,
         handler = function ()
-            if talent.tear_open_wounds.enabled and debuff.rip.up then
-                debuff.rip.expires = debuff.rip.expires - 4
-            end
             applyDebuff( "target", "rip", action.primal_wrath.apply_duration )
             active_dot.rip = active_enemies
 
             spend( combo_points.current, "combo_points" )
-            removeStack( "bloodtalons" )
-            removeBuff( "coiled_to_spring" )
+            if talent.bloodtalons.enabled then removeStack( "bloodtalons" ) end
+            if talent.coiled_to_spring.enabled then removeBuff( "coiled_to_spring" ) end
+            if talent.rip_and_tear.enabled then applyDebuff( "target", "tear" ) end
 
-            if buff.eye_of_fearful_symmetry.up then
+            if legendary.eye_of_fearful_symmetry.enabled and buff.eye_of_fearful_symmetry.up then
                 gain( 2, "combo_points" )
                 removeStack( "eye_of_fearful_symmetry" )
             end
 
-            if talent.rip_and_tear.enabled then applyDebuff( "target", "tear" ) end
-
-            opener_done = true
+            -- opener_done = true
         end,
     },
 
@@ -2279,7 +2306,7 @@ spec:RegisterAbilities( {
         school = "physical",
 
         spend = function ()
-            return 35 * ( buff.incarnation.up and 0.75 or 1 ), "energy"
+            return 35 * ( buff.incarnation.up and talent.incarnation_avatar_of_ashamane.enabled and  0.75 or 1 ), "energy"
         end,
         spendType = "energy",
 
@@ -2290,13 +2317,13 @@ spec:RegisterAbilities( {
         min_ttd = 6,
 
         damage = function ()
-            return calculate_damage( 0.16, true ) * ( effective_stealth and class.auras.prowl.multiplier or 1 ) * ( talent.infected_wounds.enabled and 1.3 or 1 )
+            return calculate_damage( 0.16, true ) * ( effective_stealth and class.auras.prowl.multiplier or 1 ) * ( talent.infected_wounds.enabled and 1.3 or 1 ) * ( 1 + 0.05 * talent.instincts_of_the_claw.rank )
         end,
         tick_damage = function ()
-            return calculate_damage( 0.2311, true ) * ( effective_stealth and class.auras.prowl.multiplier or 1 ) * ( talent.infected_wounds.enabled and 1.3 or 1 )
+            return calculate_damage( 0.2311, true ) * ( effective_stealth and class.auras.prowl.multiplier or 1 ) * ( talent.infected_wounds.enabled and 1.3 or 1 ) * ( 1 + 0.05 * talent.instincts_of_the_claw.rank )
         end,
         tick_dmg = function ()
-            return calculate_damage( 0.2311, true ) * ( effective_stealth and class.auras.prowl.multiplier or 1 ) * ( talent.infected_wounds.enabled and 1.3 or 1 )
+            return calculate_damage( 0.2311, true ) * ( effective_stealth and class.auras.prowl.multiplier or 1 ) * ( talent.infected_wounds.enabled and 1.3 or 1 ) * ( 1 + 0.05 * talent.instincts_of_the_claw.rank )
         end,
 
         -- This will override action.X.cost to avoid a non-zero return value, as APL compares damage/cost with Shred.
@@ -2312,19 +2339,18 @@ spec:RegisterAbilities( {
 
             applyDebuff( "target", "rake" )
             debuff.rake.pmultiplier = persistent_multiplier
-            removeBuff( "sudden_ambush" )
-
-            if talent.doubleclawed_rake.enabled and active_dot.rake < true_active_enemies then active_dot.rake = active_dot.rake + 1 end
+            if talent.sudden_ambush.enabled then removeBuff( "sudden_ambush" ) end
+            if talent.doubleclawed_rake.enabled then active_dot.rake = min( true_active_enemies, active_dot.rake + 1 ) end
             if talent.infected_wounds.enabled then applyDebuff( "target", "infected_wounds" ) end
-
-            gain( talent.berserk.enabled and buff.bs_inc.up and 2 or 1, "combo_points" )
-
+            if buff.bs_inc.up and talent.berserk_frenzy.enabled then applyDebuff( "target", "frenzied_assault" ) end
             if talent.bloodtalons.enabled then
                 applyBuff( "bt_rake" )
                 check_bloodtalons()
             end
 
-            if buff.bs_inc.up and talent.berserk_frenzy.enabled then applyDebuff( "target", "frenzied_assault" ) end
+            gain( talent.berserk.enabled and buff.bs_inc.up and 2 or 1 + ( allow_crit_prediction and crit_pct_current >= 95 and 1 or 0 ), "combo_points" )
+
+
         end,
 
         copy = "rake_bleed"
@@ -2433,7 +2459,7 @@ spec:RegisterAbilities( {
         gcd = "totem",
         school = "physical",
 
-        spend = function () return 30 * ( buff.incarnation.up and 0.75 or 1 ) end,
+        spend = function () return 20 * ( buff.incarnation.up and 0.75 or 1 ) end,
         spendType = "energy",
 
         talent = "rip",
@@ -2473,12 +2499,17 @@ spec:RegisterAbilities( {
             debuff.rip.pmultiplier = persistent_multiplier
             spend( combo_points.current, "combo_points" )
 
-            removeStack( "bloodtalons" )
-
-            if buff.eye_of_fearful_symmetry.up then gain( 2, "combo_points" ) end
+            if talent.bloodtalons.enabled then removeStack( "bloodtalons" ) end
             if talent.rip_and_tear.enabled then applyDebuff( "target", "tear" ) end
 
-            opener_done = true
+            if legendary.eye_of_fearful_symmetry.enabled and buff.eye_of_fearful_symmetry.up then
+                gain( 2, "combo_points" )
+                removeStack( "eye_of_fearful_symmetry" )
+            end
+
+            
+
+            -- opener_done = true
         end,
     },
 
@@ -2492,7 +2523,7 @@ spec:RegisterAbilities( {
 
         spend = function ()
             if buff.clearcasting.up then return 0 end
-            return 40 * ( buff.incarnation.up and 0.75 or 1 )
+            return 40 * ( buff.incarnation.up and talent.incarnation_avatar_of_ashamane.enabled and 0.75 or 1 )
         end,
         spendType = "energy",
 
@@ -2503,7 +2534,7 @@ spec:RegisterAbilities( {
         end,
 
         damage = function ()
-            return calculate_damage( 1.025, false, true, ( talent.pouncing_strikes.enabled and effective_stealth and class.auras.prowl.multiplier or 1 ) * ( talent.merciless_claws.enabled and bleeding and 1.2 or 1 ) * ( buff.clearcasting.up and class.auras.clearcasting.multiplier or 1 ) * ( talent.berserk.enabled and buff.bs_inc.up and class.auras.berserk.multiplier or 1 ) )
+            return calculate_damage( 1.025, false, true, ( talent.pouncing_strikes.enabled and effective_stealth and class.auras.prowl.multiplier or 1 ) * ( 1 + ( talent.instincts_of_the_claw.rank * 0.05)  ) * ( talent.empowered_shapeshifting and 1.06 or 1 ) * ( talent.merciless_claws.enabled and bleeding and 1.2 or 1 ) * ( buff.clearcasting.up and class.auras.clearcasting.multiplier or 1 ) * ( talent.berserk.enabled and buff.bs_inc.up and class.auras.berserk.multiplier or 1 ) )
         end,
 
         -- This will override action.X.cost to avoid a non-zero return value, as APL compares damage/cost with Shred.
@@ -2511,18 +2542,14 @@ spec:RegisterAbilities( {
 
         handler = function ()
             if talent.fluid_form.enabled and buff.cat_form.down then shift( "cat_form" ) end
-
-            removeBuff( "sudden_ambush" )
-            gain( 1 + ( talent.berserk.enabled and buff.bs_inc.up and 1 or 0 ) + ( talent.pouncing_strikes.enabled and buff.prowl.up and 1 or 0 ), "combo_points" )
-
+            if talent.thrashing_claws.enabled and talent.thrash.enabled then applyDebuff( "target", "thrash_cat" ) end
             if talent.bloodtalons.enabled then
                 applyBuff( "bt_shred" )
                 check_bloodtalons()
             end
 
-            if talent.cats_curiosity.enabled and buff.clearcasting.up then
-                gain( 40 * 0.25, "energy" )
-            end
+            gain( 1 + ( talent.berserk.enabled and buff.bs_inc.up and 1 or 0 ) + ( talent.pouncing_strikes.enabled and buff.prowl.up and 1 or 0 ) + ( allow_crit_prediction and crit_pct_current >= 95 and 1 or 0 ), "combo_points" )
+
             removeStack( "clearcasting" )
         end,
     },
@@ -2649,7 +2676,7 @@ spec:RegisterAbilities( {
         cost = function () return max( 1, class.abilities.swipe_cat.spend ) end,
 
         handler = function ()
-            gain( talent.berserk.enabled and 2 or 1, "combo_points" )
+            gain( talent.berserk.enabled and 2 or 1 + ( allow_crit_prediction and crit_pct_current * active_enemies >= 230 and 1 or 0 ), "combo_points" )
 
             if talent.bloodtalons.enabled then
                 applyBuff( "bt_swipe_cat" )
@@ -2740,7 +2767,7 @@ spec:RegisterAbilities( {
             end
 
             -- if target.within8 then
-                gain( talent.berserk.enabled and buff.bs_inc.up and 2 or 1, "combo_points" )
+                gain( talent.berserk.enabled and buff.bs_inc.up and 2 or 1 + ( allow_crit_prediction and crit_pct_current * active_enemies >= 230 and 1 or 0 ), "combo_points" )
             -- end
 
             if talent.bloodtalons.enabled then
@@ -2788,36 +2815,41 @@ spec:RegisterAbilities( {
         handler = function ()
             shift( "cat_form" )
             applyBuff( "tigers_fury" )
-            if azerite.jungle_fury.enabled then applyBuff( "jungle_fury" ) end
             if talent.savage_fury.enabled then applyBuff( "savage_fury" ) end
             if talent.tigers_tenacity.enabled then addStack( "tigers_tenacity", nil, 3 ) end
+            if talent.killing_strikes.enabled and buff.ravage_upon_combat.up then
+                applyBuff( "ravage" )
+                removeBuff( "ravage_upon_combat" )
+            end
 
+            -- Legacy
             if legendary.eye_of_fearful_symmetry.enabled then
                 applyBuff( "eye_of_fearful_symmetry", nil, 2 )
             end
+            if azerite.jungle_fury.enabled then applyBuff( "jungle_fury" ) end
         end,
     },
 } )
 
+spec:RegisterRanges( "rake", "shred", "skull_bash", "growl", "moonfire" )
 
---[[ spec:RegisterSetting( "owlweave_cat", false, {
-    name = "|T136036:0|t Attempt Owlweaving (Experimental)",
-    desc = "If checked, the addon will swap to Moonkin Form based on the default priority.",
-    type = "toggle",
-    width = "full"
-} ) ]]
+spec:RegisterOptions( {
+    enabled = true,
 
-spec:RegisterSetting( "frenzy_cp", 2, {
-    name = strformat( "%s: Combo Point Cap", Hekili:GetSpellLinkWithTexture( spec.abilities.feral_frenzy.id ) ),
-    desc = strformat( "In the default priority, %s will only be recommended if you have fewer than the specified number of Combo Points.  "
-        .. "When %s (or %s) is active, this cap is raised by one point.\n\n"
-        .. "Default: |cFF00B4FF2|r", Hekili:GetSpellLinkWithTexture( spec.abilities.feral_frenzy.id ), Hekili:GetSpellLinkWithTexture( spec.abilities.berserk.id ),
-        Hekili:GetSpellLinkWithTexture( spec.abilities.incarnation.id ) ),
-    type = "range",
-    min = 1,
-    max = 5,
-    step = 1,
-    width = "full",
+    aoe = 3,
+    cycle = false,
+
+    nameplates = true,
+    nameplateRange = 10,
+    rangeFilter = false,
+
+    damage = true,
+    damageDots = false,
+    damageExpiration = 3,
+
+    potion = "tempered_potion",
+
+    package = "Feral"
 } )
 
 --[[ TODO: Revisit due to removal of Relentless Predator.
@@ -2841,10 +2873,7 @@ spec:RegisterSetting( "use_funnel", false, {
     width = "full"
 } )  ]]
 
-spec:RegisterStateExpr( "funneling", function()
-    return settings.use_funnel and talent.taste_for_blood.enabled and talent.relentless_predator.enabled and not talent.tear_open_wounds.enabled
-end )
-
+--[[ Currently handled by the APL
 spec:RegisterSetting( "zerk_biteweave", false, {
     name = strformat( "%s Biteweave", Hekili:GetSpellLinkWithTexture( spec.abilities.berserk.id ) ),
     desc = function()
@@ -2858,14 +2887,74 @@ spec:RegisterSetting( "zerk_biteweave", false, {
 
 spec:RegisterVariable( "zerk_biteweave", function()
     return settings.zerk_biteweave ~= false
+end )--]]
+
+--[[ spec:RegisterSetting( "owlweave_cat", false, {
+    name = "|T136036:0|t Attempt Owlweaving (Experimental)",
+    desc = "If checked, the addon will swap to Moonkin Form based on the default priority.",
+    type = "toggle",
+    width = "full"
+} ) ]]
+
+spec:RegisterSetting( "rip_duration", 9, {
+    name = strformat( "%s Duration", Hekili:GetSpellLinkWithTexture( spec.abilities.rip.id ) ),
+    desc = strformat( "\nIf set above |cFFFFD1000|r, %s will not be recommended if the target will die within the specified timeframe.",
+        Hekili:GetSpellLinkWithTexture( spec.abilities.rip.id ) ),
+    type = "range",
+    min = 0,
+    max = 18,
+    step = 0.1,
+    width = 1.5
+} )
+
+spec:RegisterSetting( "frenzy_cp", 2, {
+    name = strformat( "%s: Combo Point Cap", Hekili:GetSpellLinkWithTexture( spec.abilities.feral_frenzy.id ) ),
+    desc = strformat( "\nIn the default priority, %s will only be recommended if you have fewer than the specified number of Combo Points. "
+        .. "When |W%s|w or |W%s|w is active, this cap is raised by one point.\n\nDefault: |cFFFFD1002|r",
+        Hekili:GetSpellLinkWithTexture( spec.abilities.feral_frenzy.id ),
+        Hekili:GetSpellLinkWithTexture( spec.abilities.berserk.id ),
+        Hekili:GetSpellLinkWithTexture( spec.abilities.incarnation.id ) ),
+    type = "range",
+    min = 1,
+    max = 5,
+    step = 1,
+    width = 1.5
+} )
+
+spec:RegisterSetting( "vigil_damage", 50, {
+    name = strformat( "%s Damage Threshold", Hekili:GetSpellLinkWithTexture( class.specs[ 102 ].abilities.natures_vigil.id ) ),
+    desc = strformat( "\nIf set below |cFFFFD100100%%|r, %s may only be recommended if your health has dropped below the specified percentage.\n\n"
+        .. "By default, |W%s|w also requires the |cFFFFD100Defensives|r toggle to be active.",
+        Hekili:GetSpellLinkWithTexture( class.specs[ 102 ].abilities.natures_vigil.id ),
+        class.specs[ 102 ].abilities.natures_vigil.name ),
+    type = "range",
+    min = 1,
+    max = 100,
+    step = 1,
+    width = 1.5
+} )
+
+spec:RegisterSetting( "allow_crit_prediction", true, {
+    name = strformat( "%s Critical Strike Combo Point Prediction", Hekili:GetSpellLinkWithTexture( 159286 ) ), -- Primal Fury
+    desc = strformat( "\nThis setting enables prediction of an additional combo point on critical strikes when talented into %s.\n\n" ..
+                      "This prediction activates only when the addon is approximately |cFFFFD10095%%|r certain a critical strike will occur based on your critical strike chance and the number of targets the spell will hit.",
+                      Hekili:GetSpellLinkWithTexture( 159286 )
+    ),
+    type = "toggle",
+    width = "full",
+} )
+
+spec:RegisterVariable( "allow_crit_prediction", function()
+    return settings.allow_crit_prediction ~= false
 end )
 
 spec:RegisterSetting( "lazy_swipe", false, {
-    name = strformat( "%s: Don't %s in AOE", Hekili:GetSpellLinkWithTexture( spec.talents.wild_slashes[2] ), Hekili:GetSpellLinkWithTexture( spec.abilities.shred.id ) ),
+    name = strformat( "%s: Don't %s in AoE", Hekili:GetSpellLinkWithTexture( spec.talents.wild_slashes[2] ), Hekili:GetSpellLinkWithTexture( spec.abilities.shred.id ) ),
     desc = function()
-        return strformat( "If checked, when %s is talented, the use of %s will be minimized in multi-target situations even if "
+        return strformat( "\nIf checked, when %s is talented, the use of %s will be minimized in multi-target situations even if "
             .. "%s is talented.\n\nThis option is a DPS loss but can be easier to execute correctly.",
-            Hekili:GetSpellLinkWithTexture( spec.talents.wild_slashes[2] ), Hekili:GetSpellLinkWithTexture( spec.abilities.shred.id ),
+            Hekili:GetSpellLinkWithTexture( spec.talents.wild_slashes[2] ),
+            Hekili:GetSpellLinkWithTexture( spec.abilities.shred.id ),
             Hekili:GetSpellLinkWithTexture( spec.talents.bloodtalons[2] ) )
     end,
     type = "toggle",
@@ -2878,8 +2967,9 @@ end )
 
 spec:RegisterSetting( "regrowth", true, {
     name = strformat( "Filler %s", Hekili:GetSpellLinkWithTexture( spec.abilities.regrowth.id ) ),
-    desc = strformat( "If checked, %s may be recommended when higher priority abilities are not available or recommended.\n\n"
-        .. "This recommendation generally occurs at very low energy, regardless of your current health.", Hekili:GetSpellLinkWithTexture( spec.abilities.regrowth.id ) ),
+    desc = strformat( "\nIf checked, %s may be recommended when higher priority abilities are not available or recommended.\n\n"
+        .. "This recommendation generally occurs at very low energy, regardless of your current health.",
+        Hekili:GetSpellLinkWithTexture( spec.abilities.regrowth.id ) ),
     type = "toggle",
     width = "full",
 } )
@@ -2892,71 +2982,32 @@ spec:RegisterStateExpr( "filler_regrowth", function()
     return settings.regrowth ~= false
 end )
 
-spec:RegisterSetting( "rip_duration", 9, {
-    name = strformat( "%s Duration", Hekili:GetSpellLinkWithTexture( spec.abilities.rip.id ) ),
-    desc = strformat( "If set above 0, %s will not be recommended if the target will die within the timeframe specified.",
-    Hekili:GetSpellLinkWithTexture( spec.abilities.rip.id ) ),
-    type = "range",
-    min = 0,
-    max = 18,
-    step = 0.1,
-    width = "full",
-} )
-
-spec:RegisterSetting( "vigil_damage", 50, {
-    name = strformat( "%s Damage Threshold", Hekili:GetSpellLinkWithTexture( class.specs[ 102 ].abilities.natures_vigil.id ) ),
-    desc = strformat( "If set below 100%%, %s may only be recommended if your health has dropped below the specified percentage.\n\n"
-    .. "By default, |W%s|w also requires the |cFFFFD100Defensives|r toggle to be active.", class.specs[ 102 ].abilities.natures_vigil.name, class.specs[ 102 ].abilities.natures_vigil.name ),
-    type = "range",
-    min = 1,
-    max = 100,
-    step = 1,
-    width = "full"
-} )
-
 spec:RegisterSetting( "solo_prowl", false, {
-    name = strformat( "Solo %s in Combat", Hekili:GetSpellLinkWithTexture( spec.abilities.prowl.id ) ),
-    desc = strformat( "If checked, %s can be recommended in combat when %s is active when you are solo.\n\n"
-        .. "This option is off by default because %s may cause you to drop combat outside of a group/encounter sitation.",
-        Hekili:GetSpellLinkWithTexture( spec.abilities.prowl.id ), Hekili:GetSpellLinkWithTexture( spec.auras.jungle_stalker.id ), spec.abilities.prowl.name ),
+    name = strformat( "Allow %s in Combat When Solo", Hekili:GetSpellLinkWithTexture( spec.abilities.prowl.id ) ),
+    desc = strformat( "\nIf checked, %s can be recommended in combat when %s is active and you are solo.\n\n"
+        .. "This option is off by default because |cFFFF0000it may drop combat|r outside of a group/encounter situation.",
+        Hekili:GetSpellLinkWithTexture( spec.abilities.prowl.id ),
+        Hekili:GetSpellLinkWithTexture( spec.auras.jungle_stalker.id ),
+        spec.abilities.prowl.name ),
     type = "toggle",
     width = "full",
 } )
 
 spec:RegisterSetting( "allow_shadowmeld", nil, {
     name = strformat( "Use %s", Hekili:GetSpellLinkWithTexture( spec.auras.shadowmeld.id ) ),
-    desc = strformat( "If checked, %s can be recommended for |W%s|w players if its conditions for use are met.\n\n"
+    desc = strformat( "\nIf checked, %s can be recommended for |W%s|w players if its conditions for use are met.\n\n"
             .. "Your stealth-based abilities can be used in |W%s|w, even if your action bar does not change. |W%s|w can only be recommended in boss fights or when you "
-            .. "are in a group (to avoid resetting combat).", Hekili:GetSpellLinkWithTexture( spec.auras.shadowmeld.id ), C_CreatureInfo.GetRaceInfo(4).raceName,
-            spec.auras.shadowmeld.name, spec.auras.shadowmeld.name ),
+            .. "are in a group (to avoid resetting combat).",
+        Hekili:GetSpellLinkWithTexture( spec.auras.shadowmeld.id ),
+        C_CreatureInfo.GetRaceInfo(4).raceName,
+        spec.auras.shadowmeld.name,
+        spec.auras.shadowmeld.name ),
     type = "toggle",
     width = "full",
     get = function () return not Hekili.DB.profile.specs[ 103 ].abilities.shadowmeld.disabled end,
     set = function ( _, val )
         Hekili.DB.profile.specs[ 103 ].abilities.shadowmeld.disabled = not val
     end,
-} )
-
-
-spec:RegisterRanges( "rake", "shred", "skull_bash", "growl", "moonfire" )
-
-spec:RegisterOptions( {
-    enabled = true,
-
-    aoe = 3,
-    cycle = false,
-
-    nameplates = true,
-    nameplateRange = 10,
-    rangeFilter = false,
-
-    damage = true,
-    damageDots = false,
-    damageExpiration = 3,
-
-    potion = "spectral_agility",
-
-    package = "Feral"
 } )
 
 
