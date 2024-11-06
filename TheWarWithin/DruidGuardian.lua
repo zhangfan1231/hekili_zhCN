@@ -1055,7 +1055,7 @@ spec:RegisterHook( "runHandler", function( ability )
     end
 end )
 
-local ursocRageSpend
+-- local ursocRageSpend
 
 spec:RegisterHook( "runHandler_startCombat", function()
     if talent.killing_strikes.enabled then applyBuff( "ravage_upon_combat") end
@@ -1071,14 +1071,14 @@ spec:RegisterHook( "spend", function( amt, resource )
                 buff.after_the_wildfire.v1 = buff.after_the_wildfire.v1 + 200
             end
         end
-
+        --[[ To be revisited using warrior Anger Management as an example
         if talent.ursocs_guidance.enabled then
             ursocRageSpend = ursocRageSpend + amt
             if ursocRageSpend >= 25 then
                 reduceCooldown( "incarnation", floor( ursocRageSpend / 25 ) )
                 ursocRageSpend = ursocRageSpend % 25
             end
-        end
+        end--]]
     end
 end )
 

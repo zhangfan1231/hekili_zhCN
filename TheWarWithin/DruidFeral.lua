@@ -2890,7 +2890,7 @@ end )--]]
 
 spec:RegisterSetting( "rip_duration", 9, {
     name = strformat( "%s Duration", Hekili:GetSpellLinkWithTexture( spec.abilities.rip.id ) ),
-    desc = strformat( "\nIf set above |cFFFFD1000|r, %s will not be recommended if the target will die within the specified timeframe.",
+    desc = strformat( "If set above |cFFFFD1000|r, %s will not be recommended if the target will die within the specified timeframe.",
         Hekili:GetSpellLinkWithTexture( spec.abilities.rip.id ) ),
     type = "range",
     min = 0,
@@ -2901,7 +2901,7 @@ spec:RegisterSetting( "rip_duration", 9, {
 
 spec:RegisterSetting( "frenzy_cp", 2, {
     name = strformat( "%s: Combo Point Cap", Hekili:GetSpellLinkWithTexture( spec.abilities.feral_frenzy.id ) ),
-    desc = strformat( "\nIn the default priority, %s will only be recommended if you have fewer than the specified number of Combo Points. "
+    desc = strformat( "In the default priority, %s will only be recommended if you have fewer than the specified number of Combo Points. "
         .. "When |W%s|w or |W%s|w is active, this cap is raised by one point.\n\nDefault: |cFFFFD1002|r",
         Hekili:GetSpellLinkWithTexture( spec.abilities.feral_frenzy.id ),
         Hekili:GetSpellLinkWithTexture( spec.abilities.berserk.id ),
@@ -2915,7 +2915,7 @@ spec:RegisterSetting( "frenzy_cp", 2, {
 
 spec:RegisterSetting( "vigil_damage", 50, {
     name = strformat( "%s Damage Threshold", Hekili:GetSpellLinkWithTexture( class.specs[ 102 ].abilities.natures_vigil.id ) ),
-    desc = strformat( "\nIf set below |cFFFFD100100%%|r, %s may only be recommended if your health has dropped below the specified percentage.\n\n"
+    desc = strformat( "If set below |cFFFFD100100%%|r, %s may only be recommended if your health has dropped below the specified percentage.\n\n"
         .. "By default, |W%s|w also requires the |cFFFFD100Defensives|r toggle to be active.",
         Hekili:GetSpellLinkWithTexture( class.specs[ 102 ].abilities.natures_vigil.id ),
         class.specs[ 102 ].abilities.natures_vigil.name ),
@@ -2927,9 +2927,9 @@ spec:RegisterSetting( "vigil_damage", 50, {
 } )
 
 spec:RegisterSetting( "allow_crit_prediction", true, {
-    name = strformat( "%s Critical Strike Combo Point Prediction", Hekili:GetSpellLinkWithTexture( 159286 ) ), -- Primal Fury
-    desc = strformat( "\nThis setting enables prediction of an additional combo point on critical strikes when talented into %s.\n\n" ..
-                      "This prediction activates only when the addon is approximately |cFFFFD10095%%|r certain a critical strike will occur based on your critical strike chance and the number of targets the spell will hit.",
+    name = strformat( "%s Combo Point Prediction", Hekili:GetSpellLinkWithTexture( 159286 ) ), -- Primal Fury
+    desc = strformat( "This setting enables prediction of an additional combo point on critical strikes when talented into %s.\n\n" ..
+                      "This prediction activates only when it is |cFFFFD10095%%|r certain a critical strike will occur based on your critical strike chance and the number of targets the spell will hit.",
                       Hekili:GetSpellLinkWithTexture( 159286 )
     ),
     type = "toggle",
@@ -2941,9 +2941,9 @@ spec:RegisterVariable( "allow_crit_prediction", function()
 end )
 
 spec:RegisterSetting( "lazy_swipe", false, {
-    name = strformat( "%s: Don't %s in AoE", Hekili:GetSpellLinkWithTexture( spec.talents.wild_slashes[2] ), Hekili:GetSpellLinkWithTexture( spec.abilities.shred.id ) ),
+    name = strformat( "%s: Don't %s in AOE", Hekili:GetSpellLinkWithTexture( spec.talents.wild_slashes[2] ), Hekili:GetSpellLinkWithTexture( spec.abilities.shred.id ) ),
     desc = function()
-        return strformat( "\nIf checked, when %s is talented, the use of %s will be minimized in multi-target situations even if "
+        return strformat( "If checked, when %s is talented, the use of %s will be minimized in multi-target situations even if "
             .. "%s is talented.\n\nThis option is a DPS loss but can be easier to execute correctly.",
             Hekili:GetSpellLinkWithTexture( spec.talents.wild_slashes[2] ),
             Hekili:GetSpellLinkWithTexture( spec.abilities.shred.id ),
@@ -2959,7 +2959,7 @@ end )
 
 spec:RegisterSetting( "regrowth", true, {
     name = strformat( "Filler %s", Hekili:GetSpellLinkWithTexture( spec.abilities.regrowth.id ) ),
-    desc = strformat( "\nIf checked, %s may be recommended when higher priority abilities are not available or recommended.\n\n"
+    desc = strformat( "If checked, %s may be recommended when higher priority abilities are not available or recommended.\n\n"
         .. "This recommendation generally occurs at very low energy, regardless of your current health.",
         Hekili:GetSpellLinkWithTexture( spec.abilities.regrowth.id ) ),
     type = "toggle",
@@ -2976,7 +2976,7 @@ end )
 
 spec:RegisterSetting( "solo_prowl", false, {
     name = strformat( "Allow %s in Combat When Solo", Hekili:GetSpellLinkWithTexture( spec.abilities.prowl.id ) ),
-    desc = strformat( "\nIf checked, %s can be recommended in combat when %s is active and you are solo.\n\n"
+    desc = strformat( "If checked, %s can be recommended in combat when %s is active and you are solo.\n\n"
         .. "This option is off by default because |cFFFF0000it may drop combat|r outside of a group/encounter situation.",
         Hekili:GetSpellLinkWithTexture( spec.abilities.prowl.id ),
         Hekili:GetSpellLinkWithTexture( spec.auras.jungle_stalker.id ),
@@ -2987,7 +2987,7 @@ spec:RegisterSetting( "solo_prowl", false, {
 
 spec:RegisterSetting( "allow_shadowmeld", nil, {
     name = strformat( "Use %s", Hekili:GetSpellLinkWithTexture( spec.auras.shadowmeld.id ) ),
-    desc = strformat( "\nIf checked, %s can be recommended for |W%s|w players if its conditions for use are met.\n\n"
+    desc = strformat( "If checked, %s can be recommended for |W%s|w players if its conditions for use are met.\n\n"
             .. "Your stealth-based abilities can be used in |W%s|w, even if your action bar does not change. |W%s|w can only be recommended in boss fights or when you "
             .. "are in a group (to avoid resetting combat).",
         Hekili:GetSpellLinkWithTexture( spec.auras.shadowmeld.id ),
