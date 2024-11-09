@@ -1662,7 +1662,7 @@ spec:RegisterStateExpr( "last_cast_imps", function ()
     local count = 0
 
     for i, imp in ipairs( wild_imps_v ) do
-        if imp - query_time <= 2 * haste then count = count + 1 end
+        if imp - query_time <= 4 * haste then count = count + 1 end
     end
 
     return count
@@ -1672,7 +1672,7 @@ spec:RegisterStateExpr( "two_cast_imps", function ()
     local count = 0
 
     for i, imp in ipairs( wild_imps_v ) do
-        if imp - query_time <= 4 * haste then count = count + 1 end
+        if imp - query_time <= 6 * haste and imp - query_time > 4 * haste then count = count + 1 end
     end
 
     return count
@@ -1682,7 +1682,7 @@ spec:RegisterStateExpr( "last_cast_igb_imps", function ()
     local count = 0
 
     for i, imp in ipairs( imp_gang_boss_v ) do
-        if imp - query_time <= 2 * haste then count = count + 1 end
+        if imp - query_time <= 4 * haste then count = count + 1 end
     end
 end )
 
@@ -1690,7 +1690,7 @@ spec:RegisterStateExpr( "two_cast_igb_imps", function ()
     local count = 0
 
     for i, imp in ipairs( imp_gang_boss_v ) do
-        if imp - query_time <= 4 * haste then count = count + 1 end
+        if imp - query_time <= 6 * haste and imp - query_time > 4 * haste then count = count + 1 end
     end
 end )
 
