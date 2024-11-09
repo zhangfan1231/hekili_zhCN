@@ -562,7 +562,7 @@ do
                 },
 
                 specs = {
-                    ['**'] = specTemplate
+                    -- ['**'] = specTemplate
                 },
 
                 packs = {
