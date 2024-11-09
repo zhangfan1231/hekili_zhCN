@@ -2029,7 +2029,6 @@ spec:RegisterSetting( "last_stand_amount", 25, {
     max = 200,
     step = 1,
     width = "full",
-    disabled = function() return state.settings.last_stand_offensively end,
 } )
 
 spec:RegisterSetting( "last_stand_health", 70, {
@@ -2040,7 +2039,6 @@ spec:RegisterSetting( "last_stand_health", 70, {
     max = 100,
     step = 1,
     width = "full",
-    disabled = function() return state.settings.last_stand_offensively end,
 } )
 
 spec:RegisterSetting( "spell_block_amount", 25, {
