@@ -674,12 +674,10 @@ local wipe = table.wipe
 
 spec:RegisterEvent( "PLAYER_REGEN_ENABLED", function()
     wipe( fresh_meat_actual )
-    wipe( marked_for_execution_stacks )
 end )
 
 spec:RegisterHook( "UNIT_ELIMINATED", function( id )
     fresh_meat_actual[ id ] = nil
-    marked_for_execution_stacks[ id ] = nil
 end )
 
 
