@@ -11708,13 +11708,8 @@ do
                     local ability = str:trim()
 
                     if ability and ( ability == "use_item" or class.abilities[ ability ] ) then
-                        if ability == "pocketsized_computation_device" then ability = "cyclotronic_blast" end
-                        -- Stub abilities that are replaced sometimes.
-                        if ability == "any_dnd" or ability == "wound_spender" or ability == "summon_pet" or ability == "apply_poison" or ability == "trinket1" or ablity == "trinket2" or ability == "raptor_bite" or ability == "mongoose_strike" then
-                            result.action = ability
-                        else
-                            result.action = class.abilities[ ability ] and class.abilities[ ability ].key or ability
-                        end
+                        if ability == "pocketsized_computation_device" then ability = "cyclotronic_blast"
+                        else result.action = ability end
                     elseif not ignore_actions[ ability ] then
                         insert( warnings, "Line " .. line .. ": Unsupported action '" .. ability .. "'." )
                         result.action = ability
