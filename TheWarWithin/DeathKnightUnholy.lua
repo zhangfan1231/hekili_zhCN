@@ -2087,7 +2087,10 @@ me:RegisterAbilities( {
         texture = function() return ( buff.vampiric_strike.up or buff.gift_of_the_sanlayn.up ) and 5927645 or 237530 end,
         startsCombat = true,
 
-        notalent = "clawing_shadows",
+        notalent = function ()
+            if buff.vampiric_strike.up or buff.gift_of_the_sanlayn.up then return end
+            return "clawing_shadows"
+        end,
         aura = "festering_wound",
         cycle_to = true,
 
