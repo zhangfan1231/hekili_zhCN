@@ -505,8 +505,6 @@ spec:RegisterHook( "reset_precast", function ()
     end
 
     rift_extensions = nil
-
-    print( buff.entropic_rift.remains, buff.voidheart.remains )
 end )
 
 spec:RegisterHook( "runHandler", function( action )
