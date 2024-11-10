@@ -2874,7 +2874,7 @@ spec:RegisterAbilities( {
 
 
     starsurge = {
-        id = function() return state.spec.balance and 78674 or 197626 end,
+        id = 78674,
         cast = 0,
         cooldown = function() return state.spec.balance and 0 or ( talent.starlight_conduit.enabled and 6 or 10 ) end,
         gcd = "spell",
