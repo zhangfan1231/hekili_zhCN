@@ -1848,6 +1848,7 @@ spec:RegisterAbilities( {
             if talent.ravage.enabled then removeBuff( "ravage" ) end
             if talent.bloodtalons.enabled then removeStack( "bloodtalons" ) end
             if talent.sabertooth.enabled then applyDebuff( "target", "sabertooth" ) end
+            if state.spec.restoration and talent.master_shapeshifter.enabled and combo_points.current == 5 then gain( 175000, "mana") end
 
             if buff.apex_predator.up or buff.apex_predators_craving.up then
                 applyBuff( "predatory_swiftness" )
@@ -2037,6 +2038,7 @@ spec:RegisterAbilities( {
 
         handler = function ()
             applyDebuff( "target", "maim", combo_points.current )
+            if state.spec.restoration and talent.master_shapeshifter.enabled and combo_points.current == 5 then gain( 175000, "mana") end
             spend( combo_points.current, "combo_points" )
 
             removeBuff( "iron_jaws" )
@@ -2491,6 +2493,7 @@ spec:RegisterAbilities( {
         handler = function ()
             applyDebuff( "target", "rip" )
             debuff.rip.pmultiplier = persistent_multiplier
+            if state.spec.restoration and talent.master_shapeshifter.enabled and combo_points.current == 5 then gain( 175000, "mana") end
             spend( combo_points.current, "combo_points" )
 
             if talent.bloodtalons.enabled then removeStack( "bloodtalons" ) end

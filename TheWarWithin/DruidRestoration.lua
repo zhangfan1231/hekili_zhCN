@@ -202,7 +202,7 @@ spec:RegisterAuras( {
         max_stack = 12
     },
     call_of_the_elder_druid = {
-        id = 338643,
+        id = 3426790,
         duration = 60,
         max_stack = 1,
         copy = "oath_of_the_elder_druid"
@@ -326,7 +326,7 @@ spec:RegisterAuras( {
         duration = 3600,
         max_stack = 1,
         onRemove = function()
-            setCooldown( "natures_swiftness", 60 )
+            setCooldown( "natures_swiftness", spec.abilities.natures_Swiftness.cooldown )
         end,
     },
     natures_vigil = {
@@ -401,7 +401,7 @@ spec:RegisterAuras( {
             end
 
             t.applied  = 0
-            t.duration = class.auras.tranquility.duration()
+            t.duration = spec.auras.tranquility.duration
             t.expires  = 0
             t.stack    = 0
             t.caster   = "nobody"
@@ -470,7 +470,7 @@ spec:RegisterStateFunction( "shift", function( form )
         applyBuff( "celestial_guardian" )
     end
 
-    if talent.call_of_the_elder_druid.enabled and debuff.oath_of_the_elder_druid.down then
+    if form == "bear_form" or form == "cat_form" and talent.call_of_the_elder_druid.enabled and debuff.oath_of_the_elder_druid.down then
         applyBuff( "heart_of_the_wild", 15 )
         applyDebuff( "player", "oath_of_the_elder_druid" )
     end
@@ -503,11 +503,15 @@ local TranquilityTickHandler = setfenv( function()
 
     addStack( "tranquility_hot" )
     if talent.dreamstate.enabled then
-        for ability, _ in pairs( spec.abilities ) do
+        for ability, _ in pairs( class.abilities ) do
             reduceCooldown( ability, 4)
         end
     end
 
+end, state )
+
+local ComboPointPeriodic = setfenv( function()
+    gain( 1, "combo_points" )
 end, state )
 
 
@@ -526,6 +530,17 @@ spec:RegisterHook( "reset_precast", function ()
         end
 
     end
+
+    if buff.heart_of_the_wild.up then
+        local tick, expires = buff.heart_of_the_wild.applied, buff.heart_of_the_wild.expires
+        for i = 2, expires - query_time, 2 do
+            tick = query_time + i
+            if tick < expires then
+                state:QueueAuraEvent( "incarnation_combo_point_perodic", ComboPointPeriodic, tick, "AURA_TICK" )
+            end
+        end
+    end
+
 
 end )
 
@@ -752,7 +767,7 @@ spec:RegisterAbilities( {
         id = 132158,
         cast = 0,
         charges = function() if talent.twinleaf.enabled then return 2 end end,
-        cooldown = 60,
+        cooldown = function() return 60 - 12 * talent.passing_seasons.rank end,
         recharge = function() if talent.twinleaf.enabled then return 60 end end,
         gcd = "off",
 
@@ -824,11 +839,12 @@ spec:RegisterAbilities( {
         texture = 136085,
 
         handler = function ()
+            removeBuff( "natures_swiftness" )
             removeBuff( "clearcasting" )
+            active_dot.regrowth = active_dot.regrowth + 1 + ( talent.power_of_the_archdruid.enabled and buff.power_of_the_archdruid.up and 2 or 0 )
             if talent.soul_of_the_forest.enabled then removeBuff( "soul_of_the_forest" ) end
             if talent.forestwalk.enabled then applyBuff( "forestwalk" ) end
             if talent.wild_synthesis.enabled then addStack( "wild_synthesis" ) end
-            if talent.power_of_the_archdruid.enabled and buff.power_of_the_archdruid.up then active_dot.regrowth = active_dot.regrowth + 2 end
             if talent.blooming_infusion.enabled then removeBuff( "blooming_infusion_regrowth" ) end
         end,
     },
@@ -859,7 +875,7 @@ spec:RegisterAbilities( {
             end
 
             if talent.soul_of_the_forest.enabled then removeBuff( "soul_of_the_forest" ) end
-            if talent.power_of_the_archdruid.enabled and buff.power_of_the_archdruid.up then active_dot.rejuvenation = active_dot.rejuvenation + 2 end
+            active_dot.rejuvenation = active_dot.rejuvenation + 1 + ( talent.power_of_the_archdruid.enabled and buff.power_of_the_archdruid.up and 2 or 0 )
         end,
     },
 
@@ -908,6 +924,7 @@ spec:RegisterAbilities( {
 
             if talent.blooming_infusion.enabled then removeBuff( "blooming_infusion" ) end
 
+            if talent.master_shapeshifter.enabled then gain( 43750, "mana") end
         end,
 
     },
@@ -927,6 +944,11 @@ spec:RegisterAbilities( {
 
         handler = function ()
             gain( 0.3 * health.max, "health" )
+            if talent.master_shapeshifter.enabled then gain( 43750, "mana") end
+            if talent.call_of_the_elder_druid.enabled and debuff.oath_of_the_elder_druid.down then
+                applyBuff( "heart_of_the_wild", 15 )
+                applyDebuff( "player", "oath_of_the_elder_druid" )
+            end
         end,
     },
 
@@ -1045,10 +1067,9 @@ spec:RegisterAbilities( {
         texture = 236153,
 
         handler = function ()
-            applyBuff( "wild_growth" )
             if talent.soul_of_the_forest.enabled then removeBuff( "soul_of_the_forest" ) end
+            active_dot.wild_growth = active_dot.wild_growth + 5 + ( talent.improved_wild_growth.enabled and 1 or 0 ) + ( buff.tree_of_life_form.up and 2 or 0 )
 
-            -- active dot + 5, or 7 during tree
         end,
     },
 
@@ -1084,6 +1105,7 @@ spec:RegisterAbilities( {
             removeBuff( "gathering_starstuff" )
 
             removeBuff( "dawning_sun" )
+            if talent.master_shapeshifter.enabled then gain( 43750, "mana") end
         end,
 
         copy = { "solar_wrath", 5176 }
