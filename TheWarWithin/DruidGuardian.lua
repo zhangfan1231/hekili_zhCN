@@ -1524,7 +1524,7 @@ spec:RegisterAbilities( {
             removeBuff( "gory_fur" )
             removeBuff( "guardian_of_elune" )
             if set_bonus.tier30_4pc > 0 then addStack( "indomitable_guardian" ) end
-            if state.spec.restoration and talent.master_shapeshifter.enabled then gain( 43750, "mana") end
+            if state.spec.restoration and talent.master_shapeshifter.enabled then gain( 43750, "mana" ) end
         end,
     },
 

@@ -327,7 +327,7 @@ spec:RegisterAuras( {
         duration = 3600,
         max_stack = 1,
         onRemove = function()
-            setCooldown( "natures_swiftness", spec.abilities.natures_Swiftness.cooldown )
+            setCooldown( "natures_swiftness", spec.abilities.natures_swiftness.cooldown )
         end,
     },
     natures_vigil = {
@@ -513,7 +513,7 @@ local TranquilityTickHandler = setfenv( function()
     addStack( "tranquility_hot" )
     if talent.dreamstate.enabled then
         for ability, _ in pairs( class.abilities ) do
-            reduceCooldown( ability, 4)
+            reduceCooldown( ability, 4 )
         end
     end
 
@@ -761,7 +761,7 @@ spec:RegisterAbilities( {
         texture = 134206,
 
         handler = function ()
-            active_dot.lifebloom = min( active_dot.lifebloom + 1, 1 + (1 * talent.undergrowth.rank ) )
+            active_dot.lifebloom = min( active_dot.lifebloom + 1, 1 + ( 1 * talent.undergrowth.rank ) )
         end,
 
         copy = { 188550, 33763 }
@@ -818,7 +818,7 @@ spec:RegisterAbilities( {
     -- Heals a friendly target for 6,471. Receives triple bonus from Mastery: Harmony.
     nourish = {
         id = 50464,
-        cast = function() return 2 * haste * ( talent.wild_synthesis.enabled and ( 1 - 0.34 * buff.wild_synthesis.stack ) or 1) end,
+        cast = function() return 2 * haste * ( talent.wild_synthesis.enabled and ( 1 - 0.34 * buff.wild_synthesis.stack ) or 1 ) end,
         cooldown = 0,
         gcd = "spell",
 
@@ -904,7 +904,7 @@ spec:RegisterAbilities( {
 
                 elseif buff.germination.remains < buff.rejuvenation.remains then applyBuff( "rejuvenation_germination" )
                 end
-            else applyBuff( "Rejuvenation" )
+            else applyBuff( "rejuvenation" )
             end
 
             if talent.soul_of_the_forest.enabled then removeBuff( "soul_of_the_forest" ) end
@@ -957,7 +957,7 @@ spec:RegisterAbilities( {
 
             if talent.blooming_infusion.enabled then removeBuff( "blooming_infusion" ) end
 
-            if talent.master_shapeshifter.enabled then gain( 43750, "mana") end
+            if talent.master_shapeshifter.enabled then gain( 43750, "mana" ) end
         end,
 
     },
@@ -977,7 +977,7 @@ spec:RegisterAbilities( {
 
         handler = function ()
             gain( 0.3 * health.max, "health" )
-            if talent.master_shapeshifter.enabled then gain( 43750, "mana") end
+            if talent.master_shapeshifter.enabled then gain( 43750, "mana" ) end
             if talent.call_of_the_elder_druid.enabled and debuff.oath_of_the_elder_druid.down then
                 applyBuff( "heart_of_the_wild", 15 )
                 applyDebuff( "player", "oath_of_the_elder_druid" )
@@ -1138,7 +1138,7 @@ spec:RegisterAbilities( {
             removeBuff( "gathering_starstuff" )
 
             removeBuff( "dawning_sun" )
-            if talent.master_shapeshifter.enabled then gain( 43750, "mana") end
+            if talent.master_shapeshifter.enabled then gain( 43750, "mana" ) end
         end,
 
         copy = { "solar_wrath", 5176 }
