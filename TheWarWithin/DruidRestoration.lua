@@ -8,6 +8,7 @@ local Hekili = _G[ addon ]
 local class, state = Hekili.Class, Hekili.State
 
 local spec = Hekili:NewSpecialization( 105 )
+local strformat = string.format
 
 spec:RegisterResource( Enum.PowerType.Mana )
 spec:RegisterResource( Enum.PowerType.Energy )
@@ -1154,10 +1155,10 @@ spec:RegisterOptions( {
     aoe = 3,
     cycle = false,
 
-    nameplates = true,
-    nameplateRange = 10,
-    rangeFilter = false,
+    nameplates = false,
 
+    rangeFilter = false,
+    healing_mode = false,
     damage = true,
     damageDots = true,
     damageExpiration = 6,
@@ -1165,14 +1166,18 @@ spec:RegisterOptions( {
     package = "Restoration Druid",
 } )
 
-
 spec:RegisterSetting( "experimental_msg", nil, {
     type = "description",
-    name = strformat( "%s %s supports a healing maintenance with the Totemic %s build.  It will recommend using %s and %s, keep %s / %s recharging, and use %s with to enhance particular spells.  Your %s will also be maintained.",
-        select( 7, GetSpecializationInfoByID( spec.id ) ), ( UnitClass( "player" ) ), Hekili:GetSpellLinkWithTexture( spec.abilities.chain_heal.id ), Hekili:GetSpellLinkWithTexture( spec.abilities.healing_rain.id ),
-        Hekili:GetSpellLinkWithTexture( spec.abilities.surging_totem.id ), Hekili:GetSpellLinkWithTexture( spec.abilities.riptide.id ), Hekili:GetSpellLinkWithTexture( spec.abilities.healing_stream_totem.id ),
-        Hekili:GetSpellLinkWithTexture( spec.abilities.unleash_life.id ), Hekili:GetSpellLinkWithTexture( spec.talents.earth_shield[2] ) ),
+    name = strformat( "Restoration Druid supports healing maintenance by recommending key abilities. It will suggest maintaining %s, keeping at least one %s active, maintaining %s, using %s after a %s, and alerting you when %s can activate %s.",
+        Hekili:GetSpellLinkWithTexture( spec.abilities.lifebloom.id ),
+        Hekili:GetSpellLinkWithTexture( spec.abilities.rejuvenation.id ),
+        Hekili:GetSpellLinkWithTexture( spec.abilities.efflorescence.id ),
+        Hekili:GetSpellLinkWithTexture( spec.abilities.wild_growth.id ),
+        Hekili:GetSpellLinkWithTexture( spec.abilities.swiftmend.id ),
+        Hekili:GetSpellLinkWithTexture( spec.abilities.swiftmend.id ),
+        Hekili:GetSpellLinkWithTexture( spec.abilities.incarnation.id ) ),
     width = "full",
+    fontSize = "medium"
 } )
 
 spec:RegisterSetting( "healing_mode", false, {
@@ -1183,4 +1188,4 @@ spec:RegisterSetting( "healing_mode", false, {
 } )
 
 
-spec:RegisterPack( "Restoration Druid", 20240908, [[Hekili:1IvAVnUnt4FlglGGDoCLptsHT)q7lkAdqx8I6fy)MoSeTfHLLuPKsAam0V9oK6IIhwoztbA3KypCoFMhoCSMy9nRT(UziRVo1C6CZNmFCm8llNn3AB2BjiRTjUEhDpa)sK7j4F)luAwmXndhhv48)i5yFQiVfg76tvvACoXdeZA7UCCy2FezTtL(NT4rq2eKN1xNyUWABa23hvklk1ZA7VJCdrKcNecoMGZWO0chxccS4)F797J9Ytr(foXrHVnU45INPQ(EZNU3CYDfo0F(4px489ae4Iy4))v3ScNFlMCc(w)4chp6FNfGJoK2E6hUFMjCQVfaw57UGT)oMkI12qCAwklnH27MhMb)6xzPnxpAwaIJJ5HH27CtdS2IIC3fI8T(fRmiI5LAhIKIihbJki1mQuTFYwpiGreSR12bfo7Y3VFCcj(1WX5jfogfo1FyAGRF8RNqH(W30AMi3SCck1(f8bCiv9Z)uvFaYLKzhV3olaz)ko0NAIfFQMaQT2W5pLsv9YpvvNeZ(jO3h0Q3ma5fLnM4EenUsGcNZNRumaDS3dijMAtZiyVmkAOXcK8i7YF3MIBkrp2LToWzPM(X3JPB1CTLPQ4jTQyyLFkvNyziAy4fhhc5MifIqqNCXrqR2McNLMfo3x4md(XnqZsPN5b2KGZtTpa99UrEczObnckR7gbhXfsXrVeFeXeknbdbbRMpXui8AA0YJ2Jji(4LG2dO9aQOmaqMl5akBCg(eO2yBFmIfnlQ(sMZHpbyMxq(2v6Rnx79MxiCoMosP1vQ3mrJ3CkoUF3rWpMmvJrMQTIsn3liBue6eJgCvHZJCPeqpP5GQyArKk5hpX9a7lv4dpOjq0t3a09anzL4JPoo1NktlCDyQqUDJxwOqT1cE(1xHlLeiGZk75Q5Rv6vY0fC(sl3sZhLMtVPY290U80GoUgTTTH1xxZzt3NcSFB)hKFNBk2tP6eTDvLsVhFiiZUJEw2d5TomdbNi47W)1b1qniajihEJveFYKHvAn(AOWAYCnd2H9IpTl2ojghLbF96MUsbixJcUTWz68sZmS7h3vta)0CwS2rtgDpYCThCJWbh1KnP5ESh9kBM66Ey4ytz6uax)kobzZMW4gMeJu3Oi2Nau72rO)P7TjjaAbQMvdvP4M2AbZciW4huZ(H7X7ggTkSmsvheI3oFb(grWZf5QhvFzEcb9I9bp)XtAU5TgnjYjTUHgPhAETLeXzc60y)Ei5nvKq5WfROIO2f0pBWa5bqywHRbCHzDUXpUAkcrx9If5z9iYQAOsvcU87uFZ(fgw5s3FQcLiDfAn4OP3SIHGdSuvYfiKGetE9txGMtZXpQQqvF0sa1ORanEPk9sn3tkoJtBoGZk1POEJd5wpvtUOFOI2MhfDw0jo6mDDhm4iDdJO)EWRclRgmjnIZ1XBknwsTK7rKypCmms7oW74Dsj2(zAjTwX(YYHRvEfxtGTUmYuIi(pHBFznLWf787sCgcv)qCeknTxkZj6FFMikQjd2nhTs7W502i5Nb10DXmVok7p(aVLoJQbEBOD(qVIqKz)kXT6FPhxZYstnjwUesab5xosmWVqLu9GX01Vat(vEOTrUjPbXagH4I9lBAPGbOpNAHDiiiqL2LcK2HoW4NCJ8zCL3dp3oJrqJtP3jfHgZX(7sokokAN9LipSANz7VWAtU6NrR)TkxufSxfWYLq28fejL(P1R3cQMV6sIO7wYA7FCkjMKrtzZkXuugB2(Kgx8mtr7XHak9lfoF(56INlTy64Mk(TR)jX8UAPKs(QfRozEhE)Av7nr5HyPpTNO5mGKTlwJ)tBxKg)N2zVxuTpOZl4mgO4HEp)LVuxwOQqy3n3r3AZAitaCHhUonA4txiAjNcq4g5BxFCkFQTN)6PM8oTuA(6mdVkA2w27)OLBd79FoL5jakCx5(WwprtX98zPB95061ILOIk)sy6PgQD)bNp3)wV2S08(zM303MUoFEqF74AuhmC5Td315sHYue3nsgY3gTzHrFpKHZm1tk2RD4mamjnVJwp8g9iDV)B1JFor0dgc69brhGPyqrQ3v0MjvqiLB3KtvSDbXXLqXCuGlGNOAxgExP36oGQ)uCxpI6tz77WRzfpRMB2cKUWIDgD(CNv6SA(sPGcNOQumCixX485YPf28KPrTMwpXCKXq(zgwVOd8OsWBNo)85H1)bV83mFfN81k(25ccTHtOrJOHD572m4fBZ0B18kQBMosmK7mM0D1tsTEIOCTt5(HaR6gzEZurdDHwIH91LpYyGI3vAmSBRYAa63dDGuAIb37lW55dmn0udwnXuu5801de51nQGBlmngQAxe6tTZ0(vREWq5EhKc7lrfoupxOrnUeq7YBsOPTP(L33aV6wmDvk66jJ0ut1LDL6PRXtGhRyBak9fjvONoNILgkYWBiveLsSxzj)J2T29P4QQEDimMPOBA1m6n9Dy0QCR1Y(1pe7WsJHAXWTTQYVKwkP2GcKRtqiYhmRumqa)BKFhKs9XjjDpTXGRDwK3zrN9UuQlvvNwAkeZ0BX5gtFC1a1meoDAt7u0FNJGb0AhxNGoa3Jdfen)eEjxEwqmXA7F6E0naFeZEkN1)(d]] )
+spec:RegisterPack( "Restoration Druid", 20241110, [[Hekili:1MvFVTnVr8plbdqZoV4j53sYGTb626aEkW6aECbE(pjlBrhZzzjd9sYcGH(SV7ifLiPiTDs7aABAepE8UF3R8OVN)p8xgfwq8)(q3HJ988ChmC0WrJ9xw8(rI)YJHB2h(c8Fscpa)7VtYlsZclOPjvR(hzL0iKK3JtdJqoLNwMTbiZF56sACXVL4V2e7hozeq7rYg)V75oXF5oAueHtljFJ)sK2h88EWZ9VwTA57z0T)58Qv7iHX0KxQwDinIuTkV84X0SIQVv9ng9Up)GR39vRWF(eSV)yhbKrk83)Eyr1Q)zA2by1O0QvBWFVyhWR82D)4dJWt7h7aw)hHzW)qrs8xgtZlYrLd2g8JVZGmss46ysK)Fd(CgTGKrdrDE72b57cJsF7ajoAq5XQvNovTI99JzPVfR(P8suTdcpSUmFhSK)YWniY6VmlCpXVaanRNvpqnstJHJkzWM0Kxt3tck2rcYpsbAYhKroestauBw1QXU8d9gqRdJjjfg3r9XuTQpN6T0x2veOWNPTsiymYkcs3YyXB04iuChPjUnQd9OMSd)jJSnJaOfqm)ajjKSxEVA1IQvpdsSdsI4WNxTYZLjAoSnVj9W60GJP0Kcyzy1jSvkOhaLkniIsy8PHb3vTA4y(X0t9ZQC6wqlz6QcNCu3YyRBCH2g73GMi2t3SN5)6OVzyBdz8eIjIJdkcZEHawK83OhjbmV1Bzu0hqX33eteuGoJaSpwd23MMfKq(Vf4Yn2GJG3cynRJqH1MyXyvSllmFhESY2mfRfI0mjyGoG)iBrv1OLHCn1Ssm1I4KxMSLMr08FUsXzIWLbG)JzKxdEzt0aVbGOeaG0bH3eEwVscahWduc3FYJB2QJxOhGW3xjrb1sJuWIzT5rBrcyG95GvnfWZ1aGk5xmdjXSi8K1Ch3uN)radSSsokbGtCfytuAXauQhOlQN1ip6cKmt4QudW81uGvbKjKsuNE2cSEin9Q8s0r3HcNJMyZ6mesol1MCTesaWukQdcbNUdEYKHsSvUdv)RWB8Cw6PMn0GdGnlT0PiGOlQhDd9WZWEvp7bpgISGZ7jbe01huYQNd6yEjOMSt3EDWRYx2SZKNE5QRlVPNE6wbLBjzPBOPL5bRbPtwi7KTFK1KwZylIONLsCnk2CUMz0J4)l52NksjC2iF1eNXG1hAAJKNFXuME6vaS7I1GGQy0SM2a0ZAJHrcbqYhteDXoEBPSnua6kbmUWyie4XM0oNV8IfGspZ(v63QN8SvFKcwM6AbyLaKDzeSDVcwxGyl5MAlUPIh5)u(k8Dr83r()5hHj7nyIzvBK2bVch)EbqxK89(VtW23ji8bmXqBYIZoMULSoon9G0b)L4431ktiD2n7GFWnTVDoQ4fryzHAwqKgQ2axMebimCdGc1ACDuRq8VOeEMUPnPvljXBVwTYO8IxK4tjXVdoy54PBOruHet2Unof8f3qsWBhQWJ)fuiQieVM2xrQ81VpLYEzI55AEfcP3wCGKej7Q97F9R2XMmcxlz9Fl9D8onbMxs1bTViTxl4b5hqrUGrrl8jqD1LHFUzplb)inOPilmjN3zaGrWfxlYiKZ1RSKmRXQVe)w47qKmsr1kHAfUfGeiFUeOP06a29tZASa(iY2WY427b3G77lHscRHcbYcMi0uq1Ac4QKHnAPrLURE367TxFwQ5bL7A3EmGLPeW3GxPVqJn5x2Y(CsrbohGb1zYcWzli3UaOv8FjaNdaFAab8zHis(zWD8Nt(nE3A7vh)mhrzoja2)HCtxw5NJ1htz)8S3areNG3ROj8OzUis9YHncMr3OwAlRmXQrPUAU9ADgoAlThAVT6E1cAhdvZ8DAMntxsA69UUA7dqGVlR5BXWzGZmJcTr(sjnkeZ6ParTTn0L3YzQB0PUZ6Xyh9)Q635Z1tJTs4MUz3LVwNLdXEAgdnP9KTlJyRk3Nh4E0AJIwue75B0U)i8F4x6RTZCREUQ6BZn)MkNb)n4UIAP4ly1kWggnpFuL6qqU5J57sHRkKfsJ4cd6VIfdbvEnRYiV9t8(eRjVWcvctIyxz(bi5sb7E60CC0ejKbsUkHz71ZAQu(PBE1RTk0vN0WELMZYcw(vgwcO5Rqvs8RSrM7(Sl4i(wywcwMYF5VDah6nczJ5EmyliSrupO6BmgTLgd(G)PQv)6X6QVXpX8bnw87M)x0XDZu1b8ntMamVNUDUPQeg3ed(SUJM9au22NI8xB7lr(RkTrGC)gLAHo3yyE)sBxV3H7XcuZRBAazNXEpK5qhi7Jlen15)4BLxh)JVpTQZC1gmR3ZRKp3ZIH60PodYrbnVo)cK0Uf8WD1ZAIVtNUC56ftDFyK7TxQe9Pt3CPIZ9v8h51mUxjlphIKQD40TUXIjoxA20shJOk6fphPdWBOIGkkbIBrTs1SN(1Orp6OX3h1fagJXihJf5w4v7czSTmjwXkIjLxa95qhxWFc5Ex37A(kIaQ)v9NVtNFgdF7DnVA3SXUTosN5T66F6KYR0nB80okf9OjtrVEsgJtN4daAXZUocon3ZTVtp5XanFII7rnH3nC8Pt9e)Im93oEMe9cgF3ynIwiru)(OAZhfVJmzlgENLbJF7W(6QSYKVUxmCS5E601o4YpLZQTPGUyO(bDMqIExkkVVZngEQaNEQHkZbx)lKoOdmXC3VKIlNpW1XInyMNRoZLtxFJEEDNA3TjUo9m98s2H2rwxA2JogFkPoQ95sf2ZEUqhHFj4T39XHAcBepMYTUdEshU4Ko3RVfBQn0TtmTWFcKydpWJrzPdlSNoh9L6PNH3PJrSdWELM8pB0Q6RRyY6PKWyKHOPzJWk9kz0QfR5DLRFQSdtD6z1hUnuT7JJ0buB8c6ANavuwzMzOHa5N94dKu6s5K6uN25MRTxKpOrN9udOivBNM6QPZyvC4QokViqltQBSgt2jnYwjOuFAUZ8AyNys8M4wZyZzjnK4vZcZ863gfPUYqhwWH8tf4yFO79BeiXG2)KcuNJfBc5IhS205nD2kdOVP)PUJTNXpJJ02exBM7SUgjMx)DsFtAU33zXY2FHNZ5MophDmmz(5Jyc(1naDtAIKWjYyRmx9LHLf7sZWxczF4o6EkBka()V]] )
