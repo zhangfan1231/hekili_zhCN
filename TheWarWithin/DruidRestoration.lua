@@ -255,7 +255,7 @@ spec:RegisterAuras( {
     grove_guardians = {
         id = 102693,
         duration = 15,
-        max_stack = 3,
+        max_stack = 5,
         generate = function( t )
             local expires = action.grove_guardians.lastCast + 15
 
@@ -430,6 +430,14 @@ spec:RegisterAuras( {
     },
 } )
 
+spec:RegisterPet( "treants",
+    54983,
+    "grove_guardians",
+    15,
+    54983 )
+
+spec:RegisterTotem( "treants", 54983 )
+
 spec:RegisterStateFunction( "break_stealth", function ()
     removeBuff( "shadowmeld" )
     if buff.prowl.up then
@@ -514,6 +522,12 @@ local ComboPointPeriodic = setfenv( function()
     gain( 1, "combo_points" )
 end, state )
 
+local TreantSpawnPeriodic = setfenv( function()
+    summonPet( "treants", 15 )
+    addStack( "grove_guardians" ) -- Just for tracking.
+    if talent.harmony_of_the_grove.enabled then addStack( "harmony_of_the_grove" ) end
+end, state )
+
 
 spec:RegisterHook( "reset_precast", function ()
 
@@ -540,6 +554,17 @@ spec:RegisterHook( "reset_precast", function ()
             end
         end
     end
+
+    if buff.incarnation.up then
+        local tick, expires = buff.incarnation.applied, buff.incarnation.expires
+        for i = 10, expires - query_time, 10 do
+            tick = query_time + i
+            if tick < expires then
+                state:QueueAuraEvent( "tree_of_life_treant_spawn", TreantSpawnPeriodic, tick, "AURA_TICK" )
+            end
+        end
+    end
+
 
 
 end )
@@ -616,7 +641,7 @@ spec:RegisterAbilities( {
     grove_guardians = {
         id = 102693,
         cast = 0.0,
-        cooldown = 20,
+        cooldown = function () return 20 - 3 * talent.early_spring.rank end,
         recharge = 20,
         charges = 3,
         icd = 0.5,
@@ -629,7 +654,8 @@ spec:RegisterAbilities( {
         startsCombat = false,
 
         handler = function()
-            applyBuff( "grove_guardians" ) -- Just for tracking.
+            summonPet( "treants", 15 )
+            addStack( "grove_guardians" ) -- Just for tracking.
             if talent.harmony_of_the_grove.enabled then addStack( "harmony_of_the_grove" ) end
         end,
     },
@@ -648,7 +674,13 @@ spec:RegisterAbilities( {
         toggle = "cooldowns",
 
         handler = function ()
-            if buff.incarnation.down then applyBuff( "incarnation" ) end
+            if buff.incarnation.down then
+                applyBuff( "incarnation" )
+                if talent.cenarius_guidance.enabled then for i = 10, 30, 10 do
+                        state:QueueAuraEvent( "tree_of_life_treant_spawn", TreantSpawnPeriodic, queryTime + i , "AURA_TICK" )
+                    end
+                end
+            end
             shift( "incarnation_tree_of_life" )
         end,
 
@@ -728,7 +760,7 @@ spec:RegisterAbilities( {
         texture = 134206,
 
         handler = function ()
-
+            active_dot.lifebloom = min( active_dot.lifebloom + 1, 1 + (1 * talent.undergrowth.rank ) )
         end,
 
         copy = { 188550, 33763 }
@@ -1136,7 +1168,17 @@ spec:RegisterOptions( {
 
 spec:RegisterSetting( "experimental_msg", nil, {
     type = "description",
-    name = "|cFFFF0000WARNING|r:  Healer support in this addon is focused on DPS output only.  This is more useful for solo content or downtime when your healing output is less critical in a group/encounter.  Use at your own risk.",
+    name = strformat( "%s %s supports a healing maintenance with the Totemic %s build.  It will recommend using %s and %s, keep %s / %s recharging, and use %s with to enhance particular spells.  Your %s will also be maintained.",
+        select( 7, GetSpecializationInfoByID( spec.id ) ), ( UnitClass( "player" ) ), Hekili:GetSpellLinkWithTexture( spec.abilities.chain_heal.id ), Hekili:GetSpellLinkWithTexture( spec.abilities.healing_rain.id ),
+        Hekili:GetSpellLinkWithTexture( spec.abilities.surging_totem.id ), Hekili:GetSpellLinkWithTexture( spec.abilities.riptide.id ), Hekili:GetSpellLinkWithTexture( spec.abilities.healing_stream_totem.id ),
+        Hekili:GetSpellLinkWithTexture( spec.abilities.unleash_life.id ), Hekili:GetSpellLinkWithTexture( spec.talents.earth_shield[2] ) ),
+    width = "full",
+} )
+
+spec:RegisterSetting( "healing_mode", false, {
+    name = "Healing Helper Mode",
+    desc = "If checked, healing abilities may be recommended using the default priority package.",
+    type = "toggle",
     width = "full",
 } )
 

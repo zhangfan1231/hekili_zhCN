@@ -2086,6 +2086,7 @@ spec:RegisterAbilities( {
 
         handler = function ()
             applyDebuff( "target", "entangling_roots" )
+            removeBuff( "natures_swiftness" )
         end,
     },
 
@@ -2578,6 +2579,19 @@ spec:RegisterAbilities( {
         end,
 
         copy = 102547
+    },
+
+    rebirth ={
+        id = 20484,
+        cast = function() return buff.natures_swiftness.up and 0 or 2 * haste end,
+        cooldown = 0,
+        gcd = "spell",
+
+        -- readyTime = there is a brez available .. API for this?
+
+        handler = function ()
+            removeBuff( "natures_swiftness" )
+        end
     },
 
     -- Heals a friendly target for $s1 and another ${$o2*$<mult>} over $d.$?s231032[ Initial heal has a $231032s1% increased chance for a critical effect if the target is already affected by Regrowth.][]$?s24858|s197625[ Usable while in Moonkin Form.][]$?s33891[    |C0033AA11Tree of Life: Instant cast.|R][]
