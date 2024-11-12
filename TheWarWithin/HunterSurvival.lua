@@ -1301,9 +1301,10 @@ spec:RegisterAbilities( {
     wildfire_bomb = {
         id = 259495,
         cast = 0,
-        charges = function () return talent.guerrilla_tactics.enabled and 2 or nil end,
-        cooldown = function() return ( 18 - talent.explosives_expert.rank ) * ( 1 - 0.25 * talent.coordinated_kill.rank * ( buff.coordinated_assault.up and 1 or 0 ) ) * haste end,
-        recharge = function() return talent.guerrilla_tactics.enabled and ( 18 - talent.explosives_expert.rank ) * ( 1 - 0.25 * talent.coordinated_kill.rank * ( buff.coordinated_assault.up and 1 or 0 ) ) * haste or nil end,
+        charges = function () if talent.guerrilla_tactics.enabled then return 2 end end,
+        cooldown = function() return ( 18 - talent.explosives_expert.rank ) * ( 1 - 0.25 * talent.coordinated_kill.rank * ( buff.coordinated_assault.up and 1 or 0 ) ) end,
+        recharge = function() return talent.guerrilla_tactics.enabled and ( 18 - talent.explosives_expert.rank ) * ( 1 - 0.25 * talent.coordinated_kill.rank * ( buff.coordinated_assault.up and 1 or 0 ) ) or nil end,
+        hasteCD = true,
         gcd = "spell",
         school = "physical",
 
