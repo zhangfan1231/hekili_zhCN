@@ -1310,17 +1310,18 @@ spec:RegisterAbilities( {
         cooldown = function ()
             return ( ( talent.flame_on.enabled and 10 or 12 ) - ( 2 * talent.fervent_flickering.rank ) )
             * ( talent.fiery_rush.enabled and buff.combustion.up and 0.5 or 1 )
-            * ( buff.memory_of_lucid_dreams.up and 0.5 or 1 ) * haste
+            * ( buff.memory_of_lucid_dreams.up and 0.5 or 1 )
         end,
         recharge = function ()
             return ( ( talent.flame_on.enabled and 10 or 12 ) - ( 2 * talent.fervent_flickering.rank ) )
             * ( talent.fiery_rush.enabled and buff.combustion.up and 0.5 or 1 )
-            * ( buff.memory_of_lucid_dreams.up and 0.5 or 1 ) * haste
+            * ( buff.memory_of_lucid_dreams.up and 0.5 or 1 )
         end,
         icd = 0.5,
         gcd = "off",
         dual_cast = function() return state.spec.fire end,
         school = "fire",
+        hasteCD = true,
 
         spend = 0.01,
         spendType = "mana",

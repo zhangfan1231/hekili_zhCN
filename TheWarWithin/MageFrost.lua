@@ -1029,9 +1029,9 @@ spec:RegisterAbilities( {
     flurry = {
         id = 44614,
         cast = 0,
-        charges = function() return talent.perpetual_winter.enabled and 2 or nil end,
+        charges = function() if talent.perpetual_winter.enabled then return 2 end end,
         cooldown = 30,
-        recharge = function() return talent.perpetual_winter.enabled and 30 or nil end,
+        recharge = function() if talent.perpetual_winter.enabled then return 30 end end,
         gcd = "spell",
         school = "frost",
 
