@@ -1,3 +1,4 @@
+
 -- DruidFeral.lua
 -- July 2024
 
@@ -2057,8 +2058,7 @@ spec:RegisterAbilities( {
     mangle = {
         id = 33917,
         cast = 0,
-        cooldown = function () return ( buff.berserk_bear.up and talent.berserk_ravage.enabled and 0 or 6 ) end,
-        hasteCD = true,
+        cooldown = function () return ( buff.berserk_bear.up and talent.berserk_ravage.enabled and 0 or 6 ) * haste end,
         gcd = "spell",
         school = "physical",
 
