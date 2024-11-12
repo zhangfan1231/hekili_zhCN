@@ -1310,18 +1310,17 @@ spec:RegisterAbilities( {
         cooldown = function ()
             return ( ( talent.flame_on.enabled and 10 or 12 ) - ( 2 * talent.fervent_flickering.rank ) )
             * ( talent.fiery_rush.enabled and buff.combustion.up and 0.5 or 1 )
-            * ( buff.memory_of_lucid_dreams.up and 0.5 or 1 )
+            * ( buff.memory_of_lucid_dreams.up and 0.5 or 1 ) * haste
         end,
         recharge = function ()
             return ( ( talent.flame_on.enabled and 10 or 12 ) - ( 2 * talent.fervent_flickering.rank ) )
             * ( talent.fiery_rush.enabled and buff.combustion.up and 0.5 or 1 )
-            * ( buff.memory_of_lucid_dreams.up and 0.5 or 1 )
+            * ( buff.memory_of_lucid_dreams.up and 0.5 or 1 ) * haste
         end,
         icd = 0.5,
         gcd = "off",
         dual_cast = function() return state.spec.fire end,
         school = "fire",
-        hasteCD = true,
 
         spend = 0.01,
         spendType = "mana",
@@ -1909,7 +1908,7 @@ spec:RegisterAbilities( {
     -- Talent: Draw power from the Night Fae, dealing 2,168 Nature damage over 3.6 sec to enemies within 18 yds. While channeling, your Mage ability cooldowns are reduced by 12 sec over 3.6 sec.
     shifting_power = {
         id = function() return talent.shifting_power.enabled and 382440 or 314791 end,
-        cast = function() return 4 * haste end,
+        cast = 4,
         channeled = true,
         cooldown = 60,
         gcd = "spell",

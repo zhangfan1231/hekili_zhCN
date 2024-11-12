@@ -1302,9 +1302,8 @@ spec:RegisterAbilities( {
         id = 259495,
         cast = 0,
         charges = function () if talent.guerrilla_tactics.enabled then return 2 end end,
-        cooldown = function() return ( 18 - talent.explosives_expert.rank ) * ( 1 - 0.25 * talent.coordinated_kill.rank * ( buff.coordinated_assault.up and 1 or 0 ) ) end,
-        recharge = function() return talent.guerrilla_tactics.enabled and ( 18 - talent.explosives_expert.rank ) * ( 1 - 0.25 * talent.coordinated_kill.rank * ( buff.coordinated_assault.up and 1 or 0 ) ) or nil end,
-        hasteCD = true,
+        cooldown = function() return ( 18 - talent.explosives_expert.rank ) * ( 1 - 0.25 * talent.coordinated_kill.rank * ( buff.coordinated_assault.up and 1 or 0 ) ) * haste end,
+        recharge = function() if talent.guerrilla_tactics.enabled then return ( 18 - talent.explosives_expert.rank ) * ( 1 - 0.25 * talent.coordinated_kill.rank * ( buff.coordinated_assault.up and 1 or 0 ) ) * haste end end,
         gcd = "spell",
         school = "physical",
 

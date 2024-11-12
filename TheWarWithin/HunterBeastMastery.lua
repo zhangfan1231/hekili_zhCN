@@ -1965,7 +1965,7 @@ spec:RegisterAbilities( {
         cast = 0,
         charges = function() if talent.alpha_predator.enabled then return 2 end end,
         cooldown = 7.5,
-        recharge = function() if talent.alpha_predator.enabled then return 7.5 end end,
+        recharge = function() if talent.alpha_predator.enabled then return 7.5 * haste end end,
         hasteCD = true,
         icd = 0.5,
         gcd = "spell",

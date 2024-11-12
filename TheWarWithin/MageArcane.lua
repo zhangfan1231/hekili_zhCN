@@ -1642,7 +1642,7 @@ spec:RegisterAbilities( {
     -- Talent: Increases your mana regeneration by 750% for 5.3 sec.
     evocation = {
         id = 12051,
-        cast = function () return 2.8 * haste end,
+        cast = 3,
         charges = 1,
         cooldown = 90,
         recharge = 90,
