@@ -180,7 +180,7 @@ spec:RegisterResource( Enum.PowerType.RunicPower, {
 local spendHook = function( amt, resource )
     -- Runic Power
     if amt > 0 and resource == "runic_power" then
-        if talent.red_thirst.enabled then reduceCooldown( "vampiric_blood", floor( amt / 10 ) * 2 ) end
+        if talent.red_thirst.enabled then reduceCooldown( "vampiric_blood", floor( amt / 5 ) ) end -- it seems to reduce it by intervals of 5, not 10
         if talent.icy_talons.enabled then addStack( "icy_talons", nil, 1 ) end
     end
     -- Runes
