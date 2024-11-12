@@ -203,7 +203,7 @@ spec:RegisterAuras( {
         max_stack = 12
     },
     call_of_the_elder_druid = {
-        id = 3426790,
+        id = 426790,
         duration = 60,
         max_stack = 1,
         copy = "oath_of_the_elder_druid"
@@ -280,7 +280,7 @@ spec:RegisterAuras( {
         duration = 9,
         max_stack = 1,
         copy = 279793 -- Azerite.
-    },
+    },4
     harmony_of_the_grove = {
         id = 428737,
         duration = 15,
@@ -289,13 +289,13 @@ spec:RegisterAuras( {
     -- The actual incarn buff
     incarnation = {
         id = 117679,
-        duration = 3600,
+        duration = 30,
         max_stack = 1
     },
     -- This is the form
     incarnation_tree_of_life = {
         id = 33891,
-        duration = 30,
+        duration = 3600,
         max_stack = 1,
         copy = "tree_of_life_form"
     },

@@ -2602,6 +2602,29 @@ spec:RegisterAbilities( {
         end,
     },
 
+    starsurge = {
+        id = 197626,
+        cast = 0,
+        cooldown = function() return 10 - ( 4 * talent.starlight_conduit.rank ) end,
+        gcd = "spell",
+
+        spend = function () return ( talent.starlight_conduit.enabled and 0.003 or 0.006 ) end,
+        spendType = "mana",
+
+        startsCombat = true,
+        texture = 135730,
+        talent = "starsurge",
+
+        handler = function ()
+            gain( 0.3 * health.max, "health" )
+            if talent.master_shapeshifter.enabled then gain( 43750, "mana" ) end
+            if talent.call_of_the_elder_druid.enabled and debuff.oath_of_the_elder_druid.down then
+                applyBuff( "heart_of_the_wild", 15 )
+                applyDebuff( "player", "oath_of_the_elder_druid" )
+            end
+        end,
+    },
+
     -- Talent: Shift into Bear Form and let loose a wild roar, increasing the movement speed of all friendly players within $A1 yards by $s1% for $d.
     stampeding_roar = {
         id = 106898,
