@@ -2583,7 +2583,7 @@ spec:RegisterAbilities( {
 
     rebirth ={
         id = 20484,
-        cast = function() return buff.natures_swiftness.up and 0 or 2 * haste end,
+        cast = function() return buff.natures_swiftness.up and 0 or 2 end,
         cooldown = 0,
         gcd = "spell",
 

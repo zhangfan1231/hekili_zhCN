@@ -1336,10 +1336,11 @@ spec:RegisterAbilities( {
         id = 22842,
         cast = 0,
         charges = function () if talent.innate_resolve.enabled then return 2 end end,
-        cooldown = function () return 36 * ( buff.berserk.up and talent.berserk_persistence.enabled and 0 or 1 ) * ( 1 - 0.1 * talent.reinvigoration.rank ) * haste end,
-        recharge = function () if talent.innate_resolve.enabled then return 36 * ( buff.berserk.up and talent.berserk_persistence.enabled and 0 or 1 ) * ( 1 - 0.1 * talent.reinvigoration.rank ) * haste end end,
+        cooldown = function () return 36 * ( buff.berserk.up and talent.berserk_persistence.enabled and 0 or 1 ) * ( 1 - 0.1 * talent.reinvigoration.rank ) end,
+        recharge = function () if talent.innate_resolve.enabled then return 36 * ( buff.berserk.up and talent.berserk_persistence.enabled and 0 or 1 ) * ( 1 - 0.1 * talent.reinvigoration.rank ) end end,
         gcd = "spell",
         school = "physical",
+        hasteCD = true,
 
         spend = function()
             if talent.empowered_shapeshifting.enabled and buff.cat_form.up then return 40, "energy" end
@@ -1386,9 +1387,10 @@ spec:RegisterAbilities( {
     growl = {
         id = 6795,
         cast = 0,
-        cooldown = function () return ( buff.berserk_bear.up and talent.berserk_ravage.enabled and 0 or 8 ) * haste end,
+        cooldown = function () return ( buff.berserk_bear.up and talent.berserk_ravage.enabled and 0 or 8 ) end,
         gcd = "off",
         school = "physical",
+        hasteCD = true,
 
         startsCombat = true,
 
@@ -1572,9 +1574,10 @@ spec:RegisterAbilities( {
     mangle = {
         id = 33917,
         cast = 0,
-        cooldown = function () return ( buff.berserk_bear.up and talent.berserk_ravage.enabled and 0 or 6 ) * haste end,
+        cooldown = function () return ( buff.berserk_bear.up and talent.berserk_ravage.enabled and 0 or 6 ) end,
         gcd = "spell",
         school = "physical",
+        hasteCD = true,
 
         spend = function() return ( -10 - ( buff.gore.up and 4 or 0 ) - ( 5 * talent.soul_of_the_forest.rank ) ) * ( buff.furious_regeneration.up and 1.15 or 1 ) end,
         spendType = "rage",
@@ -2068,9 +2071,9 @@ spec:RegisterAbilities( {
     survival_instincts = {
         id = 61336,
         cast = 0,
-        charges = function() return talent.improved_survival_instincts.enabled and 2 or nil end,
+        charges = function() if talent.improved_survival_instincts.enabled then return 2 end end,
         cooldown = function () return ( essence.vision_of_perfection.enabled and 0.87 or 1 ) * ( 1 - 0.12 * talent.survival_of_the_fittest.rank ) * 180 end,
-        recharge = function () return talent.improved_survival_instincts.enabled and ( ( essence.vision_of_perfection.enabled and 0.87 or 1 ) * ( 1 - 0.12 * talent.survival_of_the_fittest.rank ) * 180 ) or nil end,
+        recharge = function () if talent.improved_survival_instincts.enabled then return ( ( essence.vision_of_perfection.enabled and 0.87 or 1 ) * ( 1 - 0.12 * talent.survival_of_the_fittest.rank ) * 180 ) end end,
         gcd = "off",
         school = "physical",
 
@@ -2153,7 +2156,8 @@ spec:RegisterAbilities( {
         known = 106832,
         suffix = "(Bear)",
         cast = 0,
-        cooldown = function () return 6 * ( buff.berserk_bear.up and talent.berserk_ravage.enabled and 0.5 or 1 ) * haste end,
+        cooldown = function () return 6 * ( buff.berserk_bear.up and talent.berserk_ravage.enabled and 0.5 or 1 ) end,
+        hasteCD = true,
         gcd = "spell",
         school = function() return talent.lunar_calling.enabled and "arcane" or "physical" end,
 

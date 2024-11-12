@@ -1876,9 +1876,9 @@ spec:RegisterAbilities( {
     frenzied_regeneration = {
         id = 22842,
         cast = 0,
-        charges = function () return talent.innate_resolve.enabled and 2 or nil end,
+        charges = function () if talent.innate_resolve.enabled then return 2 end end,
         cooldown = function () return 36 * ( buff.berserk.up and talent.berserk_persistence.enabled and 0 or 1 ) * ( 1 - 0.2 * talent.reinvigoration.rank ) end,
-        recharge = function () return talent.innate_resolve.enabled and ( 36 * ( buff.berserk.up and talent.berserk_persistence.enabled and 0 or 1 ) ) or nil end,
+        recharge = function () if talent.innate_resolve.enabled then return ( 36 * ( buff.berserk.up and talent.berserk_persistence.enabled and 0 or 1 ) ) end end,
         gcd = "spell",
         school = "physical",
 
@@ -2057,7 +2057,8 @@ spec:RegisterAbilities( {
     mangle = {
         id = 33917,
         cast = 0,
-        cooldown = function () return ( buff.berserk_bear.up and talent.berserk_ravage.enabled and 0 or 6 ) * haste end,
+        cooldown = function () return ( buff.berserk_bear.up and talent.berserk_ravage.enabled and 0 or 6 ) end,
+        hasteCD = true,
         gcd = "spell",
         school = "physical",
 
