@@ -610,7 +610,7 @@ spec:RegisterAuras( {
     },
     exterminate = {
         id = 441416,
-        duration = 3600,
+        duration = 30,
         max_stack = function () return talent.reapers_onslaught.enabled and 1 or 2 end,
         copy = { 447954, "exterminate_painful_death" }
     },
@@ -625,8 +625,8 @@ spec:RegisterAuras( {
     -- https://wowhead.com/beta/spell=55095
     frost_fever = {
         id = 55095,
-        duration = function() return 24 * ( spec.frost and talent.wither_away.enabled and 0.5 or 1 ) end,
-        tick_time = function() return 3 * ( spec.frost and talent.wither_away.enabled and 0.5 or 1 ) end,
+        duration = function() return 24 * ( state.spec.frost and talent.wither_away.enabled and 0.5 or 1 ) end,
+        tick_time = function() return 3 * ( state.spec.frost and talent.wither_away.enabled and 0.5 or 1 ) end,
         max_stack = 1
     },
     -- Absorbs damage.
