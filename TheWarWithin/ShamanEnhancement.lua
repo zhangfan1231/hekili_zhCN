@@ -1793,6 +1793,7 @@ spec:RegisterAbilities( {
     -- Talent: Chills the target with frost, causing $s1 Frost damage and reducing the target's movement speed by $s2% for $d.
     frost_shock = {
         id = 196840,
+        known = 196840,
         cast = 0,
         cooldown = 6,
         hasteCD = true,
@@ -1818,6 +1819,10 @@ spec:RegisterAbilities( {
 
             if buff.vesper_totem.up and vesper_totem_dmg_charges > 0 then trigger_vesper_damage() end
         end,
+
+        bind = function()
+            if talent.ice_strike_passive.enabled then return "ice_strike" end
+        end
     },
 
     -- Turn into a Ghost Wolf, increasing movement speed by $?s382215[${$s2+$382216s1}][$s2]% and preventing movement speed from being reduced below $s3%.
@@ -1939,6 +1944,7 @@ spec:RegisterAbilities( {
         spendType = "mana",
 
         talent = "ice_strike",
+        notalent = "ice_strike_passive",
         startsCombat = true,
 
         handler = function ()
