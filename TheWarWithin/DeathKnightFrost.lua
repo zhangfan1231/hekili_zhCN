@@ -444,7 +444,7 @@ spec:RegisterAuras( {
         meta = {
             remains = function( t )
                 if not t.up then return 0 end
-                return ( runic_power.current + ( runes.current * 10 ) ) / 16
+                return ( runic_power.current + ( runes.current * 10 ) ) / 17
             end,
         }
     },
@@ -1006,7 +1006,7 @@ local spendHook = function( amt, resource )
         end
 
         if talent.rune_carved_plates.enabled then
-            addStack( "rune_carved_plates" )
+            addStack( "rune_carved_plates", nil, amt )
         end
     end
 end
@@ -1166,7 +1166,7 @@ spec:RegisterAbilities( {
         cooldown = 120,
         gcd = "off",
 
-        spend = 18,
+        spend = 17,
         spendType = "runic_power",
         readySpend = function () return settings.bos_rp end,
 
@@ -1682,6 +1682,7 @@ spec:RegisterAbilities( {
                     applyDebuff( "target", "frost_fever" )
                     active_dot.frost_fever = max ( active_dot.frost_fever, active_enemies ) -- it applies in AoE around your target
                 end
+                gain( 10, "runic_power")
             end
 
             if buff.killing_machine.up then
