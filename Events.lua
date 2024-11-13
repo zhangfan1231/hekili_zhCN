@@ -1215,6 +1215,8 @@ RegisterUnitEvent( "UNIT_SPELLCAST_START", "player", "target", function( event, 
             Hekili:ForceUpdate( event )
             if state.holds[ ability.key ] then Hekili:RemoveHold( ability.key, true ) end
         end
+
+        Hekili:ForceUpdate( event, true )
     end
 end )
 
@@ -1333,6 +1335,8 @@ end )
 
 -- TODO:  This should be changed to stash this information and then commit it on next UNIT_SPELLCAST_START or UNIT_SPELLCAST_SUCCEEDED.
 RegisterEvent( "UNIT_SPELLCAST_SENT", function ( event, unit, target_name, castID, spellID )
+    Hekili:ForceUpdate( event )
+
     if target_name and UnitGUID( target_name ) then
         state.cast_target = UnitGUID( target_name )
         return
