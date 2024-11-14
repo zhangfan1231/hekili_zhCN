@@ -982,7 +982,7 @@ spec:RegisterCombatLogEvent( function( _, subtype, _,  sourceGUID, sourceName, _
     if destGUID == state.GUID and ( subtype == "SPELL_AURA_APPLIED" or subtype == "SPELL_AURA_REFRESH" ) then
         if spellID == 224125 then
             insert( molten_weapons, {
-                expires = GetTime() + state.talent.flowing_spirits.enabled and 8 or 15
+                expires = GetTime() + ( state.talent.flowing_spirits.enabled and 8 or 15 )
             } )
 
         elseif spellID == 224126 then
