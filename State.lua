@@ -5720,7 +5720,8 @@ do
                 buff.key = key
                 buff.id = spellID
                 buff.name = name
-                buff.count = count > 0 and count or 1
+                if buff.count and buff.count > 0 then buff.count = buff.count + ( count > 0 and count or 1 )
+                else buff.count = count > 0 and count or 1 end
                 buff.expires = expires
                 -- buff.duration = duration
                 buff.applied = expires - duration
