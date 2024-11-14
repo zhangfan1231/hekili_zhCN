@@ -2447,10 +2447,6 @@ do
             self.Engine.superUpdate = true
         end
 
-        if super and self.activeThread and coroutine.status( self.activeThread ) == "suspended" then
-            self.activeThread = nil
-        end
-
         if self.Engine.firstForce == 0 then
             self.Engine.firstForce = GetTime()
         end
