@@ -2310,7 +2310,7 @@ spec:RegisterOptions( {
     damage = true,
     damageExpiration = 8,
 
-    potion = "potion_of_phantom_fire",
+    potion = "tempered_potion",
 
     package = "Blood",
 } )

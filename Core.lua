@@ -814,14 +814,14 @@ function Hekili:GetPredictionFromAPL( dispName, packName, listName, slot, action
                     elseif action == "potion" then
                         local usePotion = entry.potion or spec.potion
                         if not usePotion or not class.abilities[ usePotion ] then usePotion = class.specs[ specID ].options.potion end
-                        if not usePotion or not class.abilities[ usePotion ] then usePotion = "elemental_potion_of_power" end
+                        if not usePotion or not class.abilities[ usePotion ] then usePotion = "tempered_potion" end
 
                         if not class.abilities[ usePotion ] then
                             action = nil
                             ability = nil
                             state.this_action = "wait"
                         else
-                            action = class.abilities[ usePotion ] and class.abilities[ usePotion ].key or "elemental_potion_of_power"
+                            action = class.abilities[ usePotion ] and class.abilities[ usePotion ].key or "tempered_potion"
                             ability = class.abilities[ action ]
                             state.this_action = action
                             entryReplaced = true
