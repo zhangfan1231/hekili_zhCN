@@ -828,7 +828,7 @@ spec:RegisterAuras( {
         max_stack = 1
     },
     reaper_of_souls = {
-        id = 440002,
+        id = 469172,
         duration = 12,
         max_stack = 1
     },
