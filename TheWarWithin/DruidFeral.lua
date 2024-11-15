@@ -1244,12 +1244,14 @@ spec:RegisterAuras( {
     bt_swipe = {
         duration = 4,
         max_stack = 1,
-        generate = bt_generator
+        generate = bt_generator,
+        copy = "bt_swipe_cat"
     },
     bt_thrash = {
         duration = 4,
         max_stack = 1,
-        generate = bt_generator
+        generate = bt_generator,
+        copy = "bt_thrash_cat"
     },
     bt_triggers = {
         alias = { "bt_brutal_slash", "bt_moonfire", "bt_rake", "bt_shred", "bt_swipe", "bt_thrash" },

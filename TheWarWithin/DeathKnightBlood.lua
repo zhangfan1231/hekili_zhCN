@@ -795,6 +795,11 @@ spec:RegisterAuras( {
         duration = 8,
         max_stack = 5
     },
+    ossuary = {
+        id = 219788,
+        duration = 3600,
+        max_stack = 1
+    },
     -- Grants the ability to walk across water.
     -- https://wowhead.com/beta/spell=3714
     path_of_frost = {
