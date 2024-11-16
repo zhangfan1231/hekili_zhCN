@@ -53,13 +53,6 @@ local specTemplate = {
     damageRange = 0,
     damagePets = false,
 
-    throttleRefresh = false,
-    regularRefresh = 0.5,
-    combatRefresh = 0.25,
-
-    throttleTime = false,
-    maxTime = 20,
-
     -- Toggles
     custom1Name = "Custom 1",
     custom2Name = "Custom 2",

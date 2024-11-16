@@ -888,29 +888,9 @@ do
         VEHICLE_UPDATE = 1,
     }
 
-    local pulseAuras = 0.1
-    local pulseDelay = 0.05
-    local pulseGlow = 0.25
-    local pulseTargets = 0.1
+    -- Opportunity for Performance Preference, maybe.
+    local pulseDisplay = 0.25
     local pulseRange = TOOLTIP_UPDATE_TIME
-    local pulseFlash = 0.5
-
-    local flashOffset = {
-        Primary = 0,
-        AOE = 0.25,
-        Interrupts = 0.125,
-        Defensives = 0.333,
-        Cooldowns = 0.416
-    }
-
-    local oocRefresh = 1
-    local icRefresh = {
-        Primary = 0.25,
-        AOE = 0.25,
-        Interrupts = 0.25,
-        Defensives = 0.5,
-        Cooldowns = 0.25
-    }
 
     local LRC = LibStub( "LibRangeCheck-3.0" )
     local LSF = SpellFlashCore
@@ -1073,23 +1053,16 @@ do
             local profile = Hekili.DB.profile
             local conf = profile.displays[ self.id ]
 
-            local fullUpdate = self.NewRecommendations
-            self.NewRecommendations = nil
-
-            local madeUpdate = false
-
+            self.timer = ( self.timer or 0 ) - elapsed
             self.alphaCheck = self.alphaCheck - elapsed
 
-            if fullUpdate or self.alphaCheck <= 0 then
-                self.alphaCheck = 0.5
+            if alphaCheck then
                 self:UpdateAlpha()
             end
 
             if not self.id == "Primary" and not ( self.Buttons[ 1 ] and self.Buttons[ 1 ].Action ) and not ( self.HasRecommendations or not self.NewRecommendations ) then
                 return
             end
-
-            local postAlpha = debugprofilestop()
 
             if Hekili.Pause and not self.paused then
                 self.Buttons[ 1 ].Overlay:Show()
@@ -1099,12 +1072,19 @@ do
                 self.paused = false
             end
 
+            local fullUpdate = self.NewRecommendations or self.timer < 0
+            if not fullUpdate then return end
+
+            local madeUpdate = false
+
+            self.timer = pulseDisplay
+            self.NewRecommendations = nil
+
             local now = GetTime()
 
-            self.recTimer = self.recTimer - elapsed
-
-            if fullUpdate or self.recTimer < 0 then
+            if fullUpdate then
                 madeUpdate = true
+
                 local alpha = self.alpha
                 local options = Hekili:GetActiveSpecOption( "abilities" )
 
@@ -1233,13 +1213,6 @@ do
                         b.ExactTime = exact_time
                     end
 
-                    self.glowTimer = -1
-                    self.rangeTimer = -1
-                    self.delayTimer = -1
-
-                    self.recTimer = 1
-                    self.alphaCheck = 0.5
-
                     self:RefreshCooldowns( "RECS_UPDATED" )
                 end
             end
@@ -1247,53 +1220,48 @@ do
             local postRecs = debugprofilestop()
 
             if self.HasRecommendations then
-                self.glowTimer = self.glowTimer - elapsed
-
-                if fullUpdate or self.glowTimer < 0 then
+                if fullUpdate and conf.glow.enabled then
                     madeUpdate = true
-                    self.glowTimer = pulseGlow
 
-                    if conf.glow.enabled then
-                        for i, b in ipairs( self.Buttons ) do
-                            if not b.Action then break end
+                    for i, b in ipairs( self.Buttons ) do
+                        if not b.Action then break end
 
-                            local a = b.Ability
+                        local a = b.Ability
 
-                            if i == 1 or conf.glow.queued then
-                                local glowing = a.id > 0 and IsSpellOverlayed( a.id )
+                        if i == 1 or conf.glow.queued then
+                            local glowing = a.id > 0 and IsSpellOverlayed( a.id )
 
-                                if glowing and not b.glowing then
-                                    b.glowColor = b.glowColor or {}
+                            if glowing and not b.glowing then
+                                b.glowColor = b.glowColor or {}
 
-                                    if conf.glow.coloring == "class" then
-                                        b.glowColor[1], b.glowColor[2], b.glowColor[3], b.glowColor[4] = RAID_CLASS_COLORS[ class.file ]:GetRGBA()
-                                    elseif conf.glow.coloring == "custom" then
-                                        b.glowColor[1], b.glowColor[2], b.glowColor[3], b.glowColor[4] = unpack(conf.glow.color)
-                                    else
-                                        b.glowColor[1], b.glowColor[2], b.glowColor[3], b.glowColor[4] = 0.95, 0.95, 0.32, 1
-                                    end
-
-                                    if conf.glow.mode == "default" then
-                                        Glower.ButtonGlow_Start( b, b.glowColor )
-                                        b.glowStop = Glower.ButtonGlow_Stop
-                                    elseif conf.glow.mode == "autocast" then
-                                        Glower.AutoCastGlow_Start( b, b.glowColor )
-                                        b.glowStop = Glower.AutoCastGlow_Stop
-                                    elseif conf.glow.mode == "pixel" then
-                                        Glower.PixelGlow_Start( b, b.glowColor )
-                                        b.glowStop = Glower.PixelGlow_Stop
-                                    end
-
-                                    b.glowing = true
-                                elseif not glowing and b.glowing then
-                                    b:glowStop()
-                                    b.glowing = false
+                                if conf.glow.coloring == "class" then
+                                    b.glowColor[1], b.glowColor[2], b.glowColor[3], b.glowColor[4] = RAID_CLASS_COLORS[ class.file ]:GetRGBA()
+                                elseif conf.glow.coloring == "custom" then
+                                    b.glowColor[1], b.glowColor[2], b.glowColor[3], b.glowColor[4] = unpack(conf.glow.color)
+                                else
+                                    b.glowColor[1], b.glowColor[2], b.glowColor[3], b.glowColor[4] = 0.95, 0.95, 0.32, 1
                                 end
-                            else
-                                if b.glowing then
-                                    b:glowStop()
-                                    b.glowing = false
+
+                                if conf.glow.mode == "default" then
+                                    Glower.ButtonGlow_Start( b, b.glowColor )
+                                    b.glowStop = Glower.ButtonGlow_Stop
+                                elseif conf.glow.mode == "autocast" then
+                                    Glower.AutoCastGlow_Start( b, b.glowColor )
+                                    b.glowStop = Glower.AutoCastGlow_Stop
+                                elseif conf.glow.mode == "pixel" then
+                                    Glower.PixelGlow_Start( b, b.glowColor )
+                                    b.glowStop = Glower.PixelGlow_Stop
                                 end
+
+                                b.glowing = true
+                            elseif not glowing and b.glowing then
+                                b:glowStop()
+                                b.glowing = false
+                            end
+                        else
+                            if b.glowing then
+                                b:glowStop()
+                                b.glowing = false
                             end
                         end
                     end
@@ -1309,7 +1277,7 @@ do
                     local a = self.Buttons[ 1 ].Action
                     local changed = self.lastFlash ~= a
 
-                    if a and ( fullUpdate or self.flashTimer < 0 or changed ) then
+                    if a and ( fullUpdate or changed ) then
                         madeUpdate = true
 
                         if changed then
@@ -1399,9 +1367,7 @@ do
 
                 local postFlash = debugprofilestop()
 
-                self.targetTimer = self.targetTimer - elapsed
-
-                if fullUpdate or self.targetTimer < 0 then
+                if fullUpdate then
                     local b = self.Buttons[ 1 ]
 
                     if conf.targets.enabled then
@@ -1438,15 +1404,13 @@ do
                         madeUpdate = true
                         b.Targets:SetText(nil)
                     end
-
-                    self.targetTimer = pulseTargets
                 end
 
                 local postTargets = debugprofilestop()
 
                 self.delayTimer = self.delayTimer - elapsed
 
-                if self.Buttons[ 1 ].ExactTime and ( self.delayTimer < 0 or fullUpdate ) then
+                if fullUpdate and self.Buttons[ 1 ].ExactTime then
                     madeUpdate = true
 
                     local b = self.Buttons[ 1 ]
@@ -1527,13 +1491,10 @@ do
                     end
 
                     b.EarliestTime = earliest_time
-
-                    self.delayTimer = pulseDelay
                 end
 
                 self.rangeTimer = self.rangeTimer - elapsed
-
-                if self.rangeTimer < 0 or fullUpdate then
+                if fullUpdate or self.rangeTimer < 0 then
                     madeUpdate = true
 
                     for i, b in ipairs( self.Buttons ) do
@@ -1612,8 +1573,7 @@ do
                         self.updateTime = newTime / self.updateCount
 
                         self.updateMax = max( self.updateMax, finish - init )
-                        self.postAlpha = max( self.postAlpha, postAlpha - init )
-                        self.postRecs = max( self.postRecs, postRecs - postAlpha )
+                        self.postRecs = max( self.postRecs, postRecs - init )
                         self.postGlow = max( self.postGlow, postGlow - postRecs )
                         self.postRange = max( self.postRange, postRange - postGlow )
                         self.postFlash = max( self.postFlash, postFlash - postRange )
@@ -1624,8 +1584,7 @@ do
                         self.updateTime = finish - init
                         self.updateMax = finish - init
 
-                        self.postAlpha = postAlpha - init
-                        self.postRecs = postRecs - postAlpha
+                        self.postRecs = postRecs - init
                         self.postGlow = postGlow - postRecs
                         self.postRange = postRange - postGlow
                         self.postFlash = postFlash - postRange
@@ -2365,25 +2324,12 @@ do
                 self.activeThreadFrames = 0
 
                 if not self.firstThreadCompleted then
-                    Hekili.maxFrameTime = InCombatLockdown() and 10 or 25
+                    Hekili.maxFrameTime = InCombatLockdown() and 10 or 50
                 else
-                    --[[ This automated throttling has been costing work/clock time at high framerates. Disabling for now.
-                    if #frameSpans > 0 then
-                        local averageSpan = 0
-                        for _, span in ipairs( frameSpans ) do
-                            averageSpan = averageSpan + span
-                        end
-                        averageSpan = 1000 * averageSpan / #frameSpans
-                        wipe( frameSpans )
-
-                        Hekili.maxFrameTime = Clamp( 0.6 * averageSpan, 3, 20 ) -- Dynamically adjust to 60% of (seemingly) average frame rate between updates.
-                    else
-                        Hekili.maxFrameTime = Hekili.maxFrameTime or 10
-                    end ]]
-
-                    Hekili.maxFrameTime = Hekili:GetActiveSpecOption( "throttleTime" ) and Hekili:GetActiveSpecOption( "maxTime" ) or 15
+                    local fps = GetFramerate()
+                    fps = 950 / ( fps > 0 and fps or 60 )
+                    Hekili.maxFrameTime = max( 7, fps )
                 end
-
 
                 thread = self.activeThread
             end
@@ -2413,17 +2359,12 @@ do
                 if coroutine.status( thread ) == "dead" or err then
                     self.activeThread = nil
 
-                    if Hekili:GetActiveSpecOption( "throttleRefresh" ) then
-                        self.refreshRate = Hekili:GetActiveSpecOption( "regularRefresh" )
-                        self.combatRate = Hekili:GetActiveSpecOption( "combatRefresh" )
-                    else
-                        self.refreshRate = 0.5
-                        self.combatRate = 0.2
-                    end
+                    self.refreshRate = 0.5
+                    self.combatRate = 0.2
 
                     if ok then
+                        if self.firstThreadCompleted then self:UpdatePerformance() end
                         self.firstThreadCompleted = true
-                        self:UpdatePerformance()
                     end
                 end
 
