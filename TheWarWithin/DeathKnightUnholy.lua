@@ -2324,7 +2324,7 @@ me:RegisterOptions( {
     cycle = true,
     cycleDebuff = "festering_wound",
 
-    potion = "potion_of_spectral_strength",
+    potion = "tempered_potion",
 
     package = "Unholy",
 } )

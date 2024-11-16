@@ -2456,7 +2456,7 @@ do
         startsCombat = false,
         toggle = "potions",
 
-        consumable = function() return state.args.potion or settings.potion or first_potion_key or "elemental_potion_of_power" end,
+        consumable = function() return state.args.potion or settings.potion or first_potion_key or "tempered_potion" end,
         item = function()
             if state.args.potion and class.abilities[ state.args.potion ] then return class.abilities[ state.args.potion ].item end
             if spec.potion and class.abilities[ spec.potion ] then return class.abilities[ spec.potion ].item end
