@@ -17,11 +17,8 @@ actions+=/kick
 actions+=/variable,name=regen_saturated,value=energy.regen_combined>30
 # Pooling Setup, check for cooldowns
 actions+=/variable,name=in_cooldowns,value=dot.deathmark.ticking|dot.kingsbane.ticking|debuff.shiv.up
-# Check to clip envenom
-actions+=/variable,name=clip_envenom,value=buff.envenom.up&buff.envenom.remains<=1
-# Check upper bounds of energy to begin spending
-actions+=/variable,name=upper_limit_energy,value=energy.pct>=(50-10*talent.vicious_venoms.rank)
-# Variable to control avoiding auto-proc on Thistle Tea
+actions+=/variable,name=clip_envenom,value=buff.envenom.up&buff.envenom.max_stack_remains<=1
+actions+=/variable,name=upper_limit_energy,value=70-30*talent.sanguine_blades-10*talent.vicious_venoms.rank
 actions+=/variable,name=avoid_tea,value=energy>40+50+5*talent.vicious_venoms.rank
 # Checking for cooldowns soon
 actions+=/variable,name=cd_soon,value=cooldown.kingsbane.remains<3&!cooldown.kingsbane.ready
@@ -146,7 +143,7 @@ actions.shiv+=/shiv,if=boss&fight_remains<=cooldown.shiv.charges*8
 actions.stealthed+=/variable,name=scent_saturation,value=buff.scent_of_blood.stack>=((spell_targets.fan_of_knives*talent.scent_of_blood.rank*2)>?20)
 actions.stealthed+=/pool_resource,for_next=1
 # Apply Deathstalkers Mark if it has fallen off
-actions.stealthed+=/ambush,if=!debuff.deathstalkers_mark.up&talent.deathstalkers_mark&(active_dot.deathstalkers_mark=0|buff.darkest_night.down)
+actions.stealthed+=/ambush,if=talent.deathstalkers_mark&(active_dot.deathstalkers_mark=0|buff.darkest_night.down)
 # Make sure to have Shiv up during Kingsbane as a final check
 actions.stealthed+=/shiv,if=talent.kingsbane&(dot.kingsbane.ticking|cooldown.kingsbane.up)&(!debuff.shiv.up&debuff.shiv.remains<1)&buff.envenom.up
 # Envenom to maintain the buff during Subterfuge
