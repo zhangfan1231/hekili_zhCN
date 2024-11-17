@@ -22,6 +22,7 @@ local IsCurrentItem = C_Item.IsCurrentItem
 local IsUsableItem = C_Item.IsUsableItem
 local IsCurrentSpell = C_Spell.IsCurrentSpell
 local GetItemCooldown = C_Item.GetItemCooldown
+local GetItemInfoInstant = C_Item.GetItemInfoInstant
 local GetSpellTexture = C_Spell.GetSpellTexture
 local IsUsableSpell = C_Spell.IsSpellUsable
 
@@ -1109,13 +1110,13 @@ do
                             if ( conf.flash.enabled and conf.flash.suppress ) then b:Hide()
                             else b:Show() end
 
-                            if i == 1 then
+                            --[[ if i == 1 then
                                 -- print( "Changing", GetTime() )
-                            end
+                            end ]]
 
                             if action ~= b.lastAction or self.NewRecommendations or not b.Image then
                                 if ability.item then
-                                    b.Image = b.Recommendation.texture or ability.texture or select( 10, GetItemInfo( ability.item ) )
+                                    b.Image = b.Recommendation.texture or ability.texture or select( 5, GetItemInfoInstant( ability.item ) )
                                 else
                                     local override = options and rawget( options, action )
                                     b.Image = override and override.icon or b.Recommendation.texture or ability.texture or GetSpellTexture( ability.id )
@@ -2228,10 +2229,15 @@ do
     Hekili.Engine.refreshTimer = 1
     Hekili.Engine.eventsTriggered = {}
 
+    local framesUsed = 0
+    local framesTimes = 0
+
     function Hekili.Engine:UpdatePerformance( wasted )
         -- Only track in combat.
         if not ( self.firstThreadCompleted and InCombatLockdown() ) then
             self.activeThreadTime = 0
+            framesUsed = 0
+            framesTimes = 0
             return
         end
 
@@ -2244,6 +2250,12 @@ do
             if self.threadUpdates then
                 local updates = self.threadUpdates.updates
                 local total = updates + 1
+
+                if framesUsed > 0 then
+                    local frameCount = ( self.threadUpdates.framesWorked or 0 ) + framesUsed
+                    self.threadUpdates.meanFrameTime = ( self.threadUpdates.meanFrameTime * self.threadUpdates.framesWorked + framesTimes ) / frameCount
+                    self.threadUpdates.framesWorked  = frameCount
+                end
 
                 if wasted then
                     -- Capture thrown away computation time due to forced resets.
@@ -2263,15 +2275,18 @@ do
                     self.threadUpdates.updates = total
                     self.threadUpdates.updatesPerSec = 1000 * total / ( now - self.threadUpdates.firstUpdate )
                 end
+
             else
                 self.threadUpdates = {
                     meanClockTime  = timeSince,
                     meanWorkTime   = self.activeThreadTime,
                     meanFrames     = self.activeThreadFrames or 1,
+                    meanFrameTime  = framesTimes > 0 and framesTimes or ( 1000 / GetFramerate() ),
                     meanWasted     = 0,
 
                     firstUpdate    = now,
                     updates        = 1,
+                    framesWorked   = framesUsed > 0 and framesUsed or 1,
                     updatesPerSec  = 1000 / ( self.activeThreadTime > 0 and self.activeThreadTime or 1 ),
 
                     peakClockTime  = timeSince,
@@ -2288,30 +2303,23 @@ do
     end
 
 
-    local frameSpans = {}
-
     Hekili.Engine:SetScript( "OnUpdate", function( self, elapsed )
         if not self.activeThread then
             self.refreshTimer = self.refreshTimer + elapsed
-            insert( frameSpans, elapsed )
         end
 
         if Hekili.DB.profile.enabled and not Hekili.Pause then
             self.refreshRate = self.refreshRate or 0.5
-            self.combatRate = self.combatRate or 0.2
+            self.combatRate = self.combatRate or 0.25
 
             local thread = self.activeThread
 
-            local firstDisplay = nil
-            local superUpdate = self.firstThreadCompleted and self.superUpdate
-
             -- If there's no thread, then see if we have a reason to update.
-            if superUpdate or ( not thread and self.refreshTimer > ( self.criticalUpdate and self.combatRate or self.refreshRate ) ) then
-                if superUpdate and thread and coroutine.status( thread ) == "suspended" then
+            if ( not thread or coroutine.status( thread ) == "dead" ) and self.refreshTimer > ( self.criticalUpdate and self.combatRate or self.refreshRate ) then
+                --[[ if thread and coroutine.status( thread ) == "suspended" then
                     -- We're going to break the thread and start over from the current display in progress.
-                    firstDisplay = state.display
                     self:UpdatePerformance( true )
-                end
+                end ]]
 
                 self.criticalUpdate = false
                 self.superUpdate = false
@@ -2326,9 +2334,13 @@ do
                 if not self.firstThreadCompleted then
                     Hekili.maxFrameTime = InCombatLockdown() and 10 or 50
                 else
-                    local fps = GetFramerate()
-                    fps = 950 / ( fps > 0 and fps or 60 )
-                    Hekili.maxFrameTime = max( 7, fps )
+                    local spf = GetFramerate()
+                    spf = 950 / ( spf > 0 and spf or 60 )
+                    if HekiliEngine.threadUpdates then
+                        Hekili.maxFrameTime = min( spf, HekiliEngine.threadUpdates.meanFrameTime )
+                    else
+                        Hekili.maxFrameTime = spf
+                    end
                 end
 
                 thread = self.activeThread
@@ -2336,10 +2348,13 @@ do
 
             -- If there's a thread, process for up to user preferred limits.
             if thread and coroutine.status( thread ) == "suspended" then
+                framesUsed  = framesUsed  + 1
+                framesTimes = framesTimes + elapsed * 1000
+
                 self.activeThreadFrames = self.activeThreadFrames + 1
                 Hekili.activeFrameStart = debugprofilestop()
 
-                local ok, err = coroutine.resume( thread, firstDisplay )
+                local ok, err = coroutine.resume( thread )
 
                 if not ok then
                     err = err .. "\n\n" .. debugstack( thread )
@@ -2363,13 +2378,15 @@ do
                     self.combatRate = 0.2
 
                     if ok then
-                        if self.firstThreadCompleted then self:UpdatePerformance() end
+                        if self.firstThreadCompleted and not self.DontProfile then self:UpdatePerformance() end
                         self.firstThreadCompleted = true
                     end
                 end
 
                 if ok and err == "AutoSnapshot" then
+                    self.DontProfile = true
                     Hekili:MakeSnapshot( true )
+                    self.DontProfile = false
                 end
             end
         end
@@ -2384,9 +2401,7 @@ do
 
     function Hekili:ForceUpdate( event, super )
         self.Engine.criticalUpdate = true
-        if super then
-            self.Engine.superUpdate = true
-        end
+        if super then self.Engine.refreshTimer = self.Engine.refreshTimer + 0.1 end
 
         if self.Engine.firstForce == 0 then
             self.Engine.firstForce = GetTime()
