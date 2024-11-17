@@ -339,15 +339,25 @@ me:RegisterAuras( {
         duration = 3600,
         max_stack = 1,
     },
+    abomination_limb = {
+        id = 383269,
+        duration = 12,
+        max_stack = 1,
+    },
     -- Talent: Absorbing up to $w1 magic damage.  Immune to harmful magic effects.
-    -- https://wowhead.com/beta/spell=48707
+    -- https://wowhead.com/spell=48707
     antimagic_shell = {
         id = 48707,
         duration = 5,
         max_stack = 1
     },
+    apocalyptic_conquest = {
+        id = 444763,
+        duration = 3600,
+        max_stack = 1,
+    },
     -- Talent: Summoning ghouls.
-    -- https://wowhead.com/beta/spell=42650
+    -- https://wowhead.com/spell=42650
     army_of_the_dead = {
         id = 42650,
         duration = 4,
@@ -355,7 +365,7 @@ me:RegisterAuras( {
         max_stack = 1
     },
     -- Talent: Stunned.
-    -- https://wowhead.com/beta/spell=221562
+    -- https://wowhead.com/spell=221562
     asphyxiate = {
         id = 108194,
         duration = 4.0,
@@ -364,7 +374,7 @@ me:RegisterAuras( {
         max_stack = 1
     },
     -- Talent: Disoriented.
-    -- https://wowhead.com/beta/spell=207167
+    -- https://wowhead.com/spell=207167
     blinding_sleet = {
         id = 207167,
         duration = 5,
@@ -378,18 +388,19 @@ me:RegisterAuras( {
         max_stack = 1
     },
     -- You may not benefit from the effects of Blood Draw.
-    -- https://wowhead.com/beta/spell=374609
+    -- https://wowhead.com/spell=374609
     blood_draw_cd = {
         id = 374609,
         duration = 120,
         max_stack = 1
     },
     -- Draining $w1 health from the target every $t1 sec.
-    -- https://wowhead.com/beta/spell=55078
+    -- https://wowhead.com/spell=55078
     blood_plague = {
         id = 55078,
         duration = function() return 24 * ( talent.ebon_fever.enabled and 0.5 or 1 ) end,
         tick_time = function() return 3 * ( talent.ebon_fever.enabled and 0.5 or 1 ) * ( buff.plaguebringer.up and 0.5 or 1 ) end,
+        type = "Disease",
         max_stack = 1,
         copy = "blood_plague_superstrain"
     },
@@ -399,8 +410,14 @@ me:RegisterAuras( {
         duration = 3600,
         max_stack = 1,
     },
+    -- https://www.wowhead.com/spell=374557
+    brittle = {
+        id = 374557,
+        duration = 5,
+        max_stack = 1,
+    },
     -- Talent: Movement slowed $w1% $?$w5!=0[and Haste reduced $w5% ][]by frozen chains.
-    -- https://wowhead.com/beta/spell=45524
+    -- https://wowhead.com/spell=45524
     chains_of_ice = {
         id = 45524,
         duration = 8,
@@ -421,6 +438,12 @@ me:RegisterAuras( {
         type = "Magic",
         max_stack = 1
     },
+    coil_of_devastation = {
+        id = 390271,
+        duration = 5,
+        type = "Disease",
+        max_stack = 1,
+    },
     commander_of_the_dead = { -- 10.0.7 PTR
         id = 390260,
         duration = 30,
@@ -428,7 +451,7 @@ me:RegisterAuras( {
         copy = "commander_of_the_dead_window"
     },
     -- Talent: Controlled.
-    -- https://wowhead.com/beta/spell=111673
+    -- https://wowhead.com/spell=111673
     control_undead = {
         id = 111673,
         duration = 300,
@@ -437,7 +460,7 @@ me:RegisterAuras( {
         max_stack = 1
     },
     -- Taunted.
-    -- https://wowhead.com/beta/spell=56222
+    -- https://wowhead.com/spell=56222
     dark_command = {
         id = 56222,
         duration = 3,
@@ -445,14 +468,14 @@ me:RegisterAuras( {
         max_stack = 1
     },
     -- Your next Death Strike is free and heals for an additional $s1% of maximum health.
-    -- https://wowhead.com/beta/spell=101568
+    -- https://wowhead.com/spell=101568
     dark_succor = {
         id = 101568,
         duration = 20,
         max_stack = 1
     },
     -- Talent: $?$w2>0[Transformed into an undead monstrosity.][Gassy.]  Damage dealt increased by $w1%.
-    -- https://wowhead.com/beta/spell=63560
+    -- https://wowhead.com/spell=63560
     dark_transformation = {
         id = 63560,
         duration = 15,
@@ -480,7 +503,7 @@ me:RegisterAuras( {
         end,
     },
     -- Reduces healing done by $m1%.
-    -- https://wowhead.com/beta/spell=327095
+    -- https://wowhead.com/spell=327095
     death = {
         id = 327095,
         duration = 6,
@@ -500,6 +523,12 @@ me:RegisterAuras( {
         -- blood_death_knight[137008] #14: { 'type': APPLY_AURA, 'subtype': ADD_PCT_MODIFIER, 'points': 48.2, 'target': TARGET_UNIT_CASTER, 'modifies': DAMAGE_HEALING, }
         -- death_rot[377540] #0: { 'type': APPLY_AURA, 'subtype': MOD_SPELL_DAMAGE_FROM_CASTER, 'points': 1.0, 'target': TARGET_UNIT_TARGET_ENEMY, }
     },
+    death_and_decay_cleave_buff = {
+        id = 188290,
+        duration = 10,
+        type = "None",
+        max_stack = 1,
+    },
     -- [444347] $@spelldesc444010
     death_charge = {
         id = 444347,
@@ -507,7 +536,7 @@ me:RegisterAuras( {
         max_stack = 1,
     },
     -- Talent: The next $w2 healing received will be absorbed.
-    -- https://wowhead.com/beta/spell=48743
+    -- https://wowhead.com/spell=48743
     death_pact = {
         id = 48743,
         duration = 15,
@@ -516,7 +545,7 @@ me:RegisterAuras( {
     death_rot = {
         id = 377540,
         duration = 10,
-        max_stack = 2,
+        max_stack = 10,
     },
     -- Your movement speed is increased by $w1%, you cannot be slowed below $s2% of normal speed, and you are immune to forced movement effects and knockbacks.
     deaths_advance = {
@@ -563,30 +592,37 @@ me:RegisterAuras( {
         max_stack = 6,
     },
     -- Reduces damage dealt to $@auracaster by $m1%.
-    -- https://wowhead.com/beta/spell=327092
+    -- https://wowhead.com/spell=327092
     famine = {
         id = 327092,
         duration = 6,
         max_stack = 3
     },
     -- Strength increased by $w1%.
-    -- https://wowhead.com/beta/spell=377591
+    -- https://wowhead.com/spell=377591
     festermight = {
         id = 377591,
         duration = 20,
         max_stack = 20
     },
     -- Suffering $w1 Frost damage every $t1 sec.
-    -- https://wowhead.com/beta/spell=55095
+    -- https://wowhead.com/spell=55095
     frost_fever = {
         id = 55095,
         duration = function() return 24 * ( talent.ebon_fever.enabled and 0.5 or 1 ) end,
         tick_time = function() return 3 * ( talent.ebon_fever.enabled and 0.5 or 1 ) * ( buff.plaguebringer.up and 0.5 or 1 ) end,
         max_stack = 1,
+        type = "Disease",
         copy = "frost_fever_superstrain"
     },
+    frost_shield = {
+        id = 207203,
+        duration = 10,
+        type = "None",
+        max_stack = 1,
+    },
     -- Movement speed slowed by $s2%.
-    -- https://wowhead.com/beta/spell=279303
+    -- https://wowhead.com/spell=279303
     frostwyrms_fury = {
         id = 279303,
         duration = 10,
@@ -594,20 +630,22 @@ me:RegisterAuras( {
         max_stack = 1,
     },
     -- Damage and attack speed increased by $s1%.
-    -- https://wowhead.com/beta/spell=377588
+    -- https://wowhead.com/spell=377588
     ghoulish_frenzy = {
         id = 377588,
         duration = 15,
         max_stack = 1,
         copy = 377589
     },
+    -- https://www.wowhead.com/spell=434153
+    -- Gift of the San'layn The effectiveness of Essence of the Blood Queen is increased by 100%. Scourge Strike has been replaced with Vampiric Strike.  
     gift_of_the_sanlayn = {
         id = 434153,
-        duration = 10,
+        duration = 15,
         max_stack = 1
     },
     -- Dealing $w1 Frost damage every $t1 sec.
-    -- https://wowhead.com/beta/spell=274074
+    -- https://wowhead.com/spell=274074
     glacial_contagion = {
         id = 274074,
         duration = 14,
@@ -621,7 +659,7 @@ me:RegisterAuras( {
         max_stack = 1,
     },
     -- Dealing $w1 Shadow damage every $t1 sec.
-    -- https://wowhead.com/beta/spell=275931
+    -- https://wowhead.com/spell=275931
     harrowing_decay = {
         id = 275931,
         duration = 4,
@@ -636,30 +674,34 @@ me:RegisterAuras( {
         max_stack = 1,
     },
     -- Talent: Damage taken reduced by $w3%.  Immune to Stun effects.
-    -- https://wowhead.com/beta/spell=48792
+    -- https://wowhead.com/spell=48792
     icebound_fortitude = {
         id = 48792,
         duration = 8,
         max_stack = 1
     },
-    -- Attack speed increased by $w1%$?a436687[, and Runic Power spending abilities deal Shadowfrost damage.][.]
+    -- https://www.wowhead.com/spell=194879
+    -- Icy Talons Attack speed increased by 18%.  
     icy_talons = {
         id = 194879,
-        duration = 6,
-        max_stack = 3
+        duration = 10,
+        max_stack = 3,
     },
     -- Taking $w1% increased Shadow damage from $@auracaster.
     incite_terror = {
         id = 458478,
         duration = 15.0,
-        max_stack = 1,
+        max_stack = 5,
     },
+    -- https://www.wowhead.com/spell=460049
+    -- Infliction of Sorrow Scourge Strike consumes your Virulent Plague to deal 100% of their remaining damage to the target.  
     infliction_of_sorrow = {
         id = 460049,
         duration = 15,
-        max_stack = 1
+        max_stack = 1,
     },
     -- Time between auto-attacks increased by $w1%.
+    -- https://www.wowhead.com/spell=391568
     insidious_chill = {
         id = 391568,
         duration = 30,
@@ -672,14 +714,14 @@ me:RegisterAuras( {
         max_stack = 1,
     },
     -- Casting speed reduced by $w1%.
-    -- https://wowhead.com/beta/spell=326868
+    -- https://wowhead.com/spell=326868
     lethargy = {
         id = 326868,
         duration = 6,
         max_stack = 1
     },
     -- Leech increased by $s1%$?a389682[, damage taken reduced by $s8%][] and immune to Charm, Fear and Sleep. Undead.
-    -- https://wowhead.com/beta/spell=49039
+    -- https://wowhead.com/spell=49039
     lichborne = {
         id = 49039,
         duration = 10,
@@ -692,8 +734,13 @@ me:RegisterAuras( {
         duration = 3,
         max_stack = 1
     },
+    mograines_might = {
+        id = 444505,
+        duration = 3600,
+        max_stack = 1,
+    },
     -- Grants the ability to walk across water.
-    -- https://wowhead.com/beta/spell=3714
+    -- https://wowhead.com/spell=3714
     path_of_frost = {
         id = 3714,
         duration = 600,
@@ -701,6 +748,7 @@ me:RegisterAuras( {
         max_stack = 1
     },
     -- Disease damage occurring ${100*(1/(1+$s1/100)-1)}% more quickly.
+    -- https://www.wowhead.com/spell=390178
     plaguebringer = {
         id = 390178,
         duration = 10,
@@ -722,7 +770,7 @@ me:RegisterAuras( {
         max_stack = 1
     },
     -- Frost damage taken from the Death Knight's abilities increased by $s1%.
-    -- https://wowhead.com/beta/spell=51714
+    -- https://wowhead.com/spell=51714
     razorice = {
         id = 51714,
         duration = 20,
@@ -730,41 +778,42 @@ me:RegisterAuras( {
         type = "Magic",
         max_stack = 5
     },
+     -- https://www.wowhead.com/spell=390276
     rotten_touch = {
         id = 390276,
         duration = 10,
         max_stack = 1
     },
     -- Strength increased by $w1%
-    -- https://wowhead.com/beta/spell=374585
+    -- https://wowhead.com/spell=374585
     rune_mastery = {
         id = 374585,
         duration = 8,
         max_stack = 1
     },
     -- Runic Power generation increased by $s1%.
-    -- https://wowhead.com/beta/spell=326918
+    -- https://wowhead.com/spell=326918
     rune_of_hysteria = {
         id = 326918,
         duration = 8,
         max_stack = 1
     },
     -- Healing for $s1% of your maximum health every $t sec.
-    -- https://wowhead.com/beta/spell=326808
+    -- https://wowhead.com/spell=326808
     rune_of_sanguination = {
         id = 326808,
         duration = 8,
         max_stack = 1
     },
     -- Absorbs $w1 magic damage.    When an enemy damages the shield, their cast speed is reduced by $w2% for $326868d.
-    -- https://wowhead.com/beta/spell=326867
+    -- https://wowhead.com/spell=326867
     rune_of_spellwarding = {
         id = 326867,
         duration = 8,
         max_stack = 1
     },
     -- Haste and Movement Speed increased by $s1%.
-    -- https://wowhead.com/beta/spell=326984
+    -- https://wowhead.com/spell=326984
     rune_of_unending_thirst = {
         id = 326984,
         duration = 10,
@@ -783,7 +832,7 @@ me:RegisterAuras( {
         max_stack = 1,
     },
     -- Talent: Afflicted by Soul Reaper, if the target is below $s3% health this effect will explode dealing an additional $343295s1 Shadowfrost damage.
-    -- https://wowhead.com/beta/spell=343294
+    -- https://wowhead.com/spell=343294
     soul_reaper = {
         id = 448229,
         duration = 5,
@@ -810,7 +859,7 @@ me:RegisterAuras( {
         max_stack = function () return talent.harbinger_of_doom.enabled and 2 or 1 end,
     },
     -- Runic Power is being fed to the Gargoyle.
-    -- https://wowhead.com/beta/spell=61777
+    -- https://wowhead.com/spell=61777
     summon_gargoyle = {
         id = 61777,
         duration = 25,
@@ -841,7 +890,7 @@ me:RegisterAuras( {
         max_stack = 1,
     },
     -- Talent: Haste increased by $s1%.
-    -- https://wowhead.com/beta/spell=207289
+    -- https://wowhead.com/spell=207289
     unholy_assault = {
         id = 207289,
         duration = 20,
@@ -849,7 +898,7 @@ me:RegisterAuras( {
         max_stack = 1
     },
     -- Talent: Surrounded by a vile swarm of insects, infecting enemies within $115994a1 yds with Virulent Plague and an unholy disease that deals damage to enemies.
-    -- https://wowhead.com/beta/spell=115989
+    -- https://wowhead.com/spell=115989
     unholy_blight_buff = {
         id = 115989,
         duration = 6,
@@ -878,7 +927,7 @@ me:RegisterAuras( {
         end,
     },
     -- Suffering $s1 Shadow damage every $t1 sec.
-    -- https://wowhead.com/beta/spell=115994
+    -- https://wowhead.com/spell=115994
     unholy_blight = {
         id = 115994,
         duration = 14,
@@ -899,7 +948,7 @@ me:RegisterAuras( {
         max_stack = 1,
     },
     -- Strength increased by $s1%.
-    -- https://wowhead.com/beta/spell=53365
+    -- https://wowhead.com/spell=53365
     unholy_strength = {
         id = 53365,
         duration = 15,
@@ -923,7 +972,7 @@ me:RegisterAuras( {
         max_stack = 1
     },
     -- Suffering $w1 Shadow damage every $t1 sec.  Erupts for $191685s1 damage split among all nearby enemies when the infected dies.
-    -- https://wowhead.com/beta/spell=191587
+    -- https://wowhead.com/spell=191587
     virulent_plague = {
         id = 191587,
         duration = function () return 27 * ( talent.ebon_fever.enabled and 0.5 or 1 ) end,
@@ -933,14 +982,14 @@ me:RegisterAuras( {
         copy = 441277,
     },
     -- The touch of the spirit realm lingers....
-    -- https://wowhead.com/beta/spell=97821
+    -- https://wowhead.com/spell=97821
     voidtouched = {
         id = 97821,
         duration = 300,
         max_stack = 1
     },
     -- Increases damage taken from $@auracaster by $m1%.
-    -- https://wowhead.com/beta/spell=327096
+    -- https://wowhead.com/spell=327096
     war = {
         id = 327096,
         duration = 6,
@@ -948,7 +997,7 @@ me:RegisterAuras( {
         max_stack = 3
     },
     -- Talent: Movement speed increased by $w1%.  Cannot be slowed below $s2% of normal movement speed.  Cannot attack.
-    -- https://wowhead.com/beta/spell=212552
+    -- https://wowhead.com/spell=212552
     wraith_walk = {
         id = 212552,
         duration = 4,
@@ -1472,10 +1521,9 @@ me:RegisterAbilities( {
         talent = "clawing_shadows",
         startsCombat = true,
 
+
         texture = function() return ( buff.vampiric_strike.up or buff.gift_of_the_sanlayn.up ) and 5927645 or 615099 end,
 
-        --[[ cycle = "festering_wound",
-        cycle_to = true, ]]
 
         handler = function ()
             if debuff.festering_wound.up then
@@ -1873,6 +1921,7 @@ me:RegisterAbilities( {
         startsCombat = true,
 
         cycle = function() if debuff.festering_wound.stack_pct > 60 then return "festering_wound" end end,
+
         min_ttd = function () return min( cooldown.death_and_decay.remains + 3, 8 ) end, -- don't try to cycle onto targets that will die too fast to get consumed.
 
         handler = function ()
@@ -2090,13 +2139,11 @@ me:RegisterAbilities( {
             if buff.vampiric_strike.up or buff.gift_of_the_sanlayn.up then return end
             return "clawing_shadows"
         end,
-
         cycle = function()
             if debuff.festering_wound.down and active_dot.festering_wound > 0 then return "festering_wound" end
             if debuff.chains_of_ice_trollbane_slow.down and active_dot.chains_of_ice_trollbane_slow > 0 then return "chains_of_ice_trollbane_slow" end
         end,
         min_ttd = function () return min( cooldown.death_and_decay.remains + 3, 8 ) end, -- don't try to cycle onto targets that will die too fast to get consumed.
-        cycle_to = true,
 
         handler = function ()
             if debuff.festering_wound.up then
@@ -2328,7 +2375,7 @@ me:RegisterOptions( {
     cycle = true,
     cycleDebuff = "festering_wound",
 
-    potion = "tempered_potion",
+    potion = "potion_of_spectral_strength",
 
     package = "Unholy",
 } )
