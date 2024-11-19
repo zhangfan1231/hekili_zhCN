@@ -15,137 +15,110 @@ local spec = Hekili:NewSpecialization( 251 )
 
 spec:RegisterResource( Enum.PowerType.Runes, {
     rune_regen = {
-        last = function ()
-            return state.query_time
-        end,
+        last = function () return state.query_time end,
+        stop = function( x ) return x == 6 end,
 
         interval = function( time, val )
-            local r = state.runes
             val = math.floor( val )
-
             if val == 6 then return -1 end
-            return r.expiry[ val + 1 ] - time
+            return state.runes.expiry[ val + 1 ] - time
+        end,
+        value = 1,
+    },
+
+    empower_rune = {
+        aura = "empower_rune_weapon",
+
+        last = function()
+            local applied = state.buff.empower_rune_weapon.applied
+            return applied + math.floor( ( state.query_time - applied ) / 5 ) * 5
         end,
 
         stop = function( x )
             return x == 6
         end,
 
-        value = 1
-    },
-
-    empower_rune = {
-        aura = "empower_rune_weapon",
-
-        last = function ()
-            return state.buff.empower_rune_weapon.applied + floor( ( state.query_time - state.buff.empower_rune_weapon.applied ) / 5 ) * 5
-        end,
-
-        stop = function ( x )
-            return x == 6
-        end,
-
         interval = 5,
-        value = 1
+        value = 1,
     },
 }, setmetatable( {
     expiry = { 0, 0, 0, 0, 0, 0 },
     cooldown = 10,
     regen = 0,
     max = 6,
-    forecast = {},
-    fcount = 0,
-    times = {},
-    values = {},
     resource = "runes",
 
-    reset = function()
+    reset = function ()
         local t = state.runes
-
         for i = 1, 6 do
             local start, duration, ready = GetRuneCooldown( i )
-
-            start = start or 0
-            duration = duration or ( 10 * state.haste )
-
-            t.expiry[ i ] = ready and 0 or start + duration
-            t.cooldown = duration
+            t.expiry[ i ] = ready and 0 or ( start + duration )
         end
-
         table.sort( t.expiry )
-
-        t.actual = nil
+        t.actual = nil -- Reset actual to force recalculation
     end,
 
     gain = function( amount )
         local t = state.runes
-
         for i = 1, amount do
-            t.expiry[ 7 - i ] = 0
+            table.insert( t.expiry, 0 )
+        end
+        while #t.expiry > 6 do
+            table.remove( t.expiry )
         end
         table.sort( t.expiry )
-
-        t.actual = nil
+        t.actual = nil -- Reset actual to force recalculation
     end,
 
     spend = function( amount )
         local t = state.runes
-
         for i = 1, amount do
-            t.expiry[ 1 ] = ( t.expiry[ 4 ] > 0 and t.expiry[ 4 ] or state.query_time ) + t.cooldown
-            table.sort( t.expiry )
+            local nextReady = ( t.expiry[ 4 ] > 0 and t.expiry[ 4 ] or state.query_time ) + t.cooldown
+            table.remove( t.expiry, 1 )
+            table.insert( t.expiry, nextReady )
         end
 
-        state.gain( amount * 10, "runic_power" )
+        if state.this_action == "obliterate" and state.buff.exterminate.up then
+            state.gain( 20, "runic_power" )
+        else
+            state.gain( amount * 10, "runic_power" )
+        end
 
         if state.talent.gathering_storm.enabled and state.buff.remorseless_winter.up then
             state.buff.remorseless_winter.expires = state.buff.remorseless_winter.expires + ( 0.5 * amount )
         end
-
-        t.actual = nil
+        t.actual = nil -- Reset actual to force recalculation
     end,
 
     timeTo = function( x )
         return state:TimeToResource( state.runes, x )
     end,
 }, {
-    __index = function( t, k, v )
+    __index = function( t, k )
         if k == "actual" then
+            -- Calculate the number of runes available based on `expiry`.
             local amount = 0
-
             for i = 1, 6 do
                 if t.expiry[ i ] <= state.query_time then
                     amount = amount + 1
                 end
             end
-
             return amount
 
         elseif k == "current" then
-            -- If this is a modeled resource, use our lookup system.
+            -- Use forecasted values if available, fallback to `actual`.
             if t.forecast and t.fcount > 0 then
                 local q = state.query_time
-                local index, slice
-
-                if t.values[ q ] then return t.values[ q ] end
-
-                for i = 1, t.fcount do
-                    local v = t.forecast[ i ]
-                    if v.t <= q then
-                        index = i
-                        slice = v
-                    else
-                        break
-                    end
-                end
-
-                -- We have a slice.
-                if index and slice then
-                    t.values[ q ] = max( 0, min( t.max, slice.v ) )
+                if t.values[ q ] then
                     return t.values[ q ]
                 end
+                for i = 1, t.fcount do
+                    local slice = t.forecast[ i ]
+                    if slice.t <= q then
+                        return max( 0, min( t.max, slice.v ) )
+                    end
+                end
             end
-
             return t.actual
 
         elseif k == "deficit" then
@@ -155,42 +128,38 @@ spec:RegisterResource( Enum.PowerType.Runes, {
             return t[ "time_to_" .. t.current + 1 ]
 
         elseif k == "time_to_max" then
-            return t.current == 6 and 0 or max( 0, t.expiry[6] - state.query_time )
-
-        elseif k == "add" then
-            return t.gain
+            return t.current == t.max and 0 or max( 0, t.expiry[ 6 ] - state.query_time )
 
         else
             local amount = k:match( "time_to_(%d+)" )
             amount = amount and tonumber( amount )
-
-            if amount then return state:TimeToResource( t, amount ) end
+            if amount then return t.timeTo( amount ) end
         end
     end
-} ) )
+}))
+
+
 
 spec:RegisterResource( Enum.PowerType.RunicPower, {
-    breath = {
-        talent = "breath_of_sindragosa",
+
+    breath_of_sindragosa = {
         aura = "breath_of_sindragosa",
-
         last = function ()
-            return state.buff.breath_of_sindragosa.applied + floor( state.query_time - state.buff.breath_of_sindragosa.applied )
+            local app = state.buff.breath_of_sindragosa.applied
+            local tick_interval = state.buff.breath_of_sindragosa.tick_time or 1
+            return app + floor( ( state.query_time - app ) / tick_interval ) * tick_interval
         end,
-
-        stop = function ( x ) return x < 16 end,
-
+        stop = function( x ) return state.buff.breath_of_sindragosa.down or x < 17 end,
         interval = 1,
-        value = -16
+        value = function ()
+            local time_remaining = state.buff.breath_of_sindragosa.expires - state.query_time
+            return time_remaining < 1 and floor( time_remaining * 17 ) or -17
+        end
     },
 
     empower_rp = {
         aura = "empower_rune_weapon",
-
-        last = function ()
-            return state.buff.empower_rune_weapon.applied + floor( ( state.query_time - state.buff.empower_rune_weapon.applied ) / 5 ) * 5
-        end,
-
+        last = function () return state.buff.empower_rune_weapon.applied + floor( ( state.query_time - state.buff.empower_rune_weapon.applied ) / 5 ) * 5 end,
         interval = 5,
         value = 5
     },
@@ -205,6 +174,7 @@ spec:RegisterResource( Enum.PowerType.RunicPower, {
         interval = 1,
         value = function () return min( 15, state.true_active_enemies * 3 ) end,
     },
+
 } )
 
 -- Talents
@@ -442,9 +412,40 @@ spec:RegisterAuras( {
         tick_time = 1,
         max_stack = 1,
         meta = {
-            remains = function( t )
-                if not t.up then return 0 end
-                return ( runic_power.current + ( runes.current * 10 ) ) / 17
+            remains = function( bos )
+                if not bos.up then return 0 end
+
+                local runic_power = runic_power.current
+                local runes = runes.current
+                local now = state.now
+                local regen_rate_rp = ( runic_power.regen or 0 ) + ( ( runes.regen or 0 ) * 10 )
+                local gcd = state.gcd.max
+                local total_time = 0
+
+                -- Simulate BoS ticks.
+                while now < bos.expires and runic_power >= 17 do
+                    -- Deduct 17 RP per tick.
+                    runic_power = runic_power - 17
+
+                    -- Add RP contribution from rune spending.
+                    if runes >= 2 then
+                        runes = runes - 2
+                        runic_power = runic_power + 20 -- RP from Obliterate.
+                    elseif runes > 0 then
+                        runic_power = runic_power + ( runes * 10 )
+                        runes = 0
+                    end
+
+                    -- Regenerate resources over 1 GCD.
+                    runic_power = runic_power + regen_rate_rp
+                    runes = min( 6, runes + ( runes.regen or 0 ) * gcd )
+
+                    -- Advance time.
+                    now = now + gcd
+                    total_time = total_time + bos.tick_time
+                end
+
+                return min( total_time, bos.expires - state.now )
             end,
         }
     },
@@ -980,16 +981,11 @@ spec:RegisterAura( "chilling_rage", {
     max_stack = 5
 } )
 
-
-
-local TriggerERW = setfenv( function()
-    gain( 1, "runes" )
-    gain( 5, "runic_power" )
-end, state )
-
+--[[ Uncomment if enduring strength buff ever becomes referenced in APL
 local TriggerEnduringStrengthBuff = setfenv( function()
     applyBuff( "enduring_strength_buff" )
 end, state )
+--]]
 
 local any_dnd_set = false
 
@@ -1034,10 +1030,11 @@ spec:RegisterHook( "reset_precast", function ()
         class.abilityList.any_dnd = "|T136144:0|t |cff00ccff[Any]|r " .. class.abilities.death_and_decay.name
         any_dnd_set = true
     end
-
+    --[[ Uncomment if enduring strength buff ever becomes referenced in APL
     if buff.pillar_of_frost.up and talent.enduring_strength.enabled then
         state:QueueAuraEvent( "pillar_of_frost", TriggerEnduringStrengthBuff, buff.pillar_of_frost.expires, "AURA_EXPIRATION" )
     end
+    --]]
 
     local control_expires = action.control_undead.lastCast + 300
     if talent.control_undead.enabled and control_expires > now and pet.up then
@@ -1052,31 +1049,7 @@ spec:RegisterHook( "reset_precast", function ()
         end
     end
 
-    if buff.empower_rune_weapon.up then
-        local tick, expires = buff.empower_rune_weapon.applied, buff.empower_rune_weapon.expires
-        for i = 1, 4 do
-            tick = tick + 5
-            if tick > query_time and tick < expires then
-                state:QueueAuraEvent( "empower_rune_weapon", TriggerERW, tick, "AURA_TICK" )
-            end
-        end
-    end
-
 end )
-
-
-spec:RegisterHook( "recheck", function( times )
-    if buff.breath_of_sindragosa.up then
-        local applied = action.breath_of_sindragosa.lastCast
-        local tick = applied + ceil( query_time - applied ) - query_time
-        if tick > 0 then times[ #times + 1 ] = tick end
-        times[ #times + 1 ] = tick + 1
-        times[ #times + 1 ] = tick + 2
-        times[ #times + 1 ] = tick + 3
-        if Hekili.ActiveDebug then Hekili:Debug( "Queued BoS recheck times at %.2f, %.2f, %.2f, and %.2f.", tick, tick + 1, tick + 2, tick + 3 ) end
-    end
-end )
-
 
 -- Abilities
 spec:RegisterAbilities( {
@@ -1425,9 +1398,9 @@ spec:RegisterAbilities( {
             gain( 1, "runes" )
             gain( 5, "runic_power" )
             applyBuff( "empower_rune_weapon" )
-            for i = 5, 20, 5 do
+            --[[for i = 5, 20, 5 do
                 state:QueueAuraEvent( "empower_rune_weapon", TriggerERW, query_time + i, "AURA_TICK" )
-            end
+            end--]]
         end,
 
         copy = "empowered_rune_weapon"
@@ -1685,7 +1658,6 @@ spec:RegisterAbilities( {
                     applyDebuff( "target", "frost_fever" )
                     active_dot.frost_fever = max ( active_dot.frost_fever, active_enemies ) -- it applies in AoE around your target
                 end
-                gain( 10, "runic_power")
             end
 
             if buff.killing_machine.up then
@@ -1969,6 +1941,30 @@ spec:RegisterOptions( {
     package = "Frost DK",
 } )
 
+--[[ Estimation of whether or not random RP gains can happen, in an attempt to smooth out changing recommendations
+spec:RegisterStateExpr( "breath_possible_gains", function ()
+    -- Initialize possible gains
+    local possible_gains = 0
+
+    -- Check for weapon swing before next GCD
+    if state.nextMH and state.nextMH > 0 and state.nextMH <= ( state.now + state.gcd.remains ) then
+        possible_gains = possible_gains + 5
+    end
+
+    -- Calculate next Frost Fever tick dynamically
+    if state.debuff.frost_fever.up then
+        local tick_time = state.debuff.frost_fever.tick_time or 3 -- Default tick time if unavailable
+        local last_tick = state.debuff.frost_fever.last_tick or state.debuff.frost_fever.applied
+        local next_tick = last_tick + tick_time
+
+        -- Check if Frost Fever will tick before the next GCD ends
+        if next_tick <= ( state.now + state.gcd.remains ) then
+            possible_gains = possible_gains + ( active_dot.frost_fever * 3 )
+        end
+    end
+
+    return possible_gains
+end )--]]
 
 spec:RegisterSetting( "bos_rp", 60, {
     name = strformat( "%s for %s", _G.RUNIC_POWER, Hekili:GetSpellLinkWithTexture( spec.abilities.breath_of_sindragosa.id ) ),
