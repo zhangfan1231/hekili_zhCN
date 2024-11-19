@@ -48,7 +48,7 @@ spec:RegisterResource( Enum.PowerType.Runes, {
     max = 6,
     resource = "runes",
 
-    reset = function ()
+    reset = function()
         local t = state.runes
         for i = 1, 6 do
             local start, duration, ready = GetRuneCooldown( i )
