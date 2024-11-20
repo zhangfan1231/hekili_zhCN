@@ -2310,7 +2310,7 @@ do
 
         if Hekili.DB.profile.enabled and not Hekili.Pause then
             self.refreshRate = self.refreshRate or 0.5
-            self.combatRate = self.combatRate or 0.25
+            self.combatRate = self.combatRate or 0.2
 
             local thread = self.activeThread
 
@@ -2335,10 +2335,10 @@ do
                     Hekili.maxFrameTime = 16.67
                 else
                     local rate = GetFramerate()
-                    local spf = 1000 / ( rate > 0 and rate or 60 )
+                    local spf = 1000 / ( rate > 0 and rate or 100 )
 
                     if HekiliEngine.threadUpdates then
-                        Hekili.maxFrameTime = min( spf, HekiliEngine.threadUpdates.meanFrameTime )
+                        Hekili.maxFrameTime = 0.95 * min( 10, spf, HekiliEngine.threadUpdates.meanFrameTime / HekiliEngine.threadUpdates.meanFrames )
 
                         --[[ local mode = Hekili:GetActiveSpecOption( "updateMode" ) or "auto"
 
