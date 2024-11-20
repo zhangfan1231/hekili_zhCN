@@ -19,7 +19,7 @@ spec:RegisterResource( Enum.PowerType.Runes, {
         stop = function( x ) return x == 6 end,
 
         interval = function( time, val )
-            val = math.floor( val )
+            val = floor( val )
             if val == 6 then return -1 end
             return state.runes.expiry[ val + 1 ] - time
         end,
@@ -31,7 +31,7 @@ spec:RegisterResource( Enum.PowerType.Runes, {
 
         last = function()
             local applied = state.buff.empower_rune_weapon.applied
-            return applied + math.floor( ( state.query_time - applied ) / 5 ) * 5
+            return applied + floor( ( state.query_time - applied ) / 5 ) * 5
         end,
 
         stop = function( x )
@@ -138,23 +138,27 @@ spec:RegisterResource( Enum.PowerType.Runes, {
     end
 }))
 
-
+spec:RegisterStateExpr("breath_ticks_left", function()
+    if not buff.breath_of_sindragosa.up then
+        return 0
+    end
+    return floor( runic_power.current / 17 ) + ( runic_power.current % 17 + ( runes.current % 2 * 17 ) / gcd.max ) / 17
+end)
 
 spec:RegisterResource( Enum.PowerType.RunicPower, {
 
     breath_of_sindragosa = {
         aura = "breath_of_sindragosa",
-        last = function ()
-            local app = state.buff.breath_of_sindragosa.applied
-            local tick_interval = state.buff.breath_of_sindragosa.tick_time or 1
-            return app + floor( ( state.query_time - app ) / tick_interval ) * tick_interval
+        stop = function( x )
+            return state.buff.breath_of_sindragosa.down or x < 17 or breath_ticks_left == 0
         end,
-        stop = function( x ) return state.buff.breath_of_sindragosa.down or x < 17 end,
         interval = 1,
-        value = function ()
-            local time_remaining = state.buff.breath_of_sindragosa.expires - state.query_time
-            return time_remaining < 1 and floor( time_remaining * 17 ) or -17
-        end
+        value = -17,
+
+        last = function()
+            local app = state.buff.breath_of_sindragosa.applied
+            return app + floor( (state.query_time - app) )
+        end,
     },
 
     empower_rp = {
@@ -408,47 +412,59 @@ spec:RegisterAuras( {
     -- https://wowhead.com/beta/spell=152279
     breath_of_sindragosa = {
         id = 152279,
-        duration = 10,
+        duration = 3600,
+        tick_time = 1,
+        max_stack = 1,
+        --[[alias = { "breath_of_sindragosa", " breath_of_sindragosa_real" },
+        aliasMode = "first",
+        aliasType = "buff",--]]
+    },
+    --[[breath_of_sindragosa = {
+        id = 152279,
+        duration = function () return floor( runic_power.current / 17 ) end,
         tick_time = 1,
         max_stack = 1,
         meta = {
-            remains = function( bos )
-                if not bos.up then return 0 end
-
-                local runic_power = runic_power.current
-                local runes = runes.current
-                local now = state.now
-                local regen_rate_rp = ( runic_power.regen or 0 ) + ( ( runes.regen or 0 ) * 10 )
-                local gcd = state.gcd.max
-                local total_time = 0
-
-                -- Simulate BoS ticks.
-                while now < bos.expires and runic_power >= 17 do
-                    -- Deduct 17 RP per tick.
-                    runic_power = runic_power - 17
-
-                    -- Add RP contribution from rune spending.
+            expires = function(t)
+                local query_time = state.query_time
+                local rp = state.runic_power.current
+                local runes = state.runes.current
+                local regen_rate = (state.runic_power.regen or 0) + ((state.runes.regen or 0) * 10)
+                local tick_cost = 17
+                local duration_remaining = t.expires - query_time
+        
+                Hekili:Print("Step-by-Step Debug for Expires:")
+                Hekili:Print("  1. Original Expires:", t.expires)
+                Hekili:Print("  2. Current Query Time:", query_time)
+        
+                -- Simulate resource usage to determine adjusted expiration time
+                while duration_remaining > 0 and rp >= tick_cost do
+                    -- Deduct RP for this tick
+                    rp = rp - tick_cost
+        
+                    -- Add RP from rune usage if available
                     if runes >= 2 then
                         runes = runes - 2
-                        runic_power = runic_power + 20 -- RP from Obliterate.
-                    elseif runes > 0 then
-                        runic_power = runic_power + ( runes * 10 )
-                        runes = 0
+                        rp = rp + 20 -- Assume 20 RP per Obliterate or similar effect
                     end
-
-                    -- Regenerate resources over 1 GCD.
-                    runic_power = runic_power + regen_rate_rp
-                    runes = min( 6, runes + ( runes.regen or 0 ) * gcd )
-
-                    -- Advance time.
-                    now = now + gcd
-                    total_time = total_time + bos.tick_time
+        
+                    -- Regenerate RP over tick time
+                    rp = rp + regen_rate
+                    runes = math.min(6, runes + (state.runes.regen or 0) * t.tick_time)
+        
+                    -- Advance by one tick
+                    duration_remaining = duration_remaining - t.tick_time
                 end
-
-                return min( total_time, bos.expires - state.now )
+        
+                -- Adjust expires dynamically
+                local adjusted_expires = query_time + duration_remaining
+                Hekili:Print("  3. Adjusted Expires Based on Resources:", adjusted_expires)
+        
+                return adjusted_expires
             end,
         }
-    },
+        
+    },--]]
     -- Talent: Movement slowed $w1% $?$w5!=0[and Haste reduced $w5% ][]by frozen chains.
     -- https://wowhead.com/beta/spell=45524
     chains_of_ice = {
@@ -1975,6 +1991,14 @@ spec:RegisterSetting( "bos_rp", 60, {
     step = 1,
     width = "full"
 } )
+
+spec:RegisterStateExpr("breath_ticks_left", function()
+    if not buff.breath_of_sindragosa.up then
+        return 0
+    end
+    return floor( runic_power.current / 17 ) + ( runic_power.current % 17 + ( runes.current % 2 * 17 ) / gcd.max ) / 17
+end)
+
 
 spec:RegisterSetting( "ams_usage", "damage", {
     name = strformat( "%s Requirements", Hekili:GetSpellLinkWithTexture( spec.abilities.antimagic_shell.id ) ),
