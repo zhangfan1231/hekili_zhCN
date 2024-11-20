@@ -2338,7 +2338,7 @@ do
                     local spf = 1000 / ( rate > 0 and rate or 100 )
 
                     if HekiliEngine.threadUpdates then
-                        Hekili.maxFrameTime = 0.95 * min( 10, spf, HekiliEngine.threadUpdates.meanFrameTime / HekiliEngine.threadUpdates.meanFrames )
+                        Hekili.maxFrameTime = 0.9 * max( 7, min( 16.667, spf, HekiliEngine.threadUpdates.meanFrameTime / HekiliEngine.threadUpdates.meanFrames ) )
 
                         --[[ local mode = Hekili:GetActiveSpecOption( "updateMode" ) or "auto"
 
