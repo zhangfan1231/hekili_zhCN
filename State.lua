@@ -1399,8 +1399,6 @@ do
         if not resource then return end
 
         -- Initialize or wipe tables
-        events = events or {}
-        remains = remains or {}
         wipe( events )
         wipe( remains )
 
@@ -1409,7 +1407,7 @@ do
 
         if state.class.file == "DEATHKNIGHT" and state.runes then
             -- Adjust timeout based on rune cooldowns and regen models for Frost DK
-            timeout = max( timeout, 0.01 + state.runes.cooldown * ( 6 - state.runes.current ) )
+            timeout = max( timeout, 0.01 + state.runes.expiry[ 6 ] - state.query_time )
         elseif state.spec.assassination then
             timeout = 15.01
         end
@@ -1419,9 +1417,7 @@ do
 
         -- Initialize forecast tables
         remains[ resource ] = timeout
-        r.times = r.times or {}
-        r.values = r.values or {}
-        r.forecast = r.forecast or {}
+
 
         wipe( r.times )
         wipe( r.values )
