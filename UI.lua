@@ -34,7 +34,7 @@ local GetSpellCooldown = function(spellID)
     return 0, 0, false, 0
 end
 
-local format, insert = string.format, table.insert
+local floor, format, insert = math.floor, string.format, table.insert
 
 local HasVehicleActionBar, HasOverrideActionBar, IsInPetBattle, UnitHasVehicleUI, UnitOnTaxi = HasVehicleActionBar, HasOverrideActionBar, C_PetBattles.IsInBattle, UnitHasVehicleUI, UnitOnTaxi
 local Tooltip = ns.Tooltip
@@ -2338,7 +2338,7 @@ do
                     local spf = 1000 / ( rate > 0 and rate or 100 )
 
                     if HekiliEngine.threadUpdates then
-                        Hekili.maxFrameTime = 0.9 * max( 7, min( 16.667, spf, HekiliEngine.threadUpdates.meanWorkTime / math.ceil( HekiliEngine.threadUpdates.meanFrames ) ) )
+                        Hekili.maxFrameTime = 0.9 * max( 7, min( 16.667, spf, 1.1 * HekiliEngine.threadUpdates.meanWorkTime / floor( HekiliEngine.threadUpdates.meanFrames ) ) )
                     else
                         Hekili.maxFrameTime = 0.9 * max( 7, min( 16.667, spf ) )
                     end
