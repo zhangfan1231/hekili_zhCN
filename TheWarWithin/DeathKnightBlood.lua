@@ -76,25 +76,37 @@ spec:RegisterResource( Enum.PowerType.Runes, {
 
     spend = function( amount )
         local t = state.runes
-
+    
+        -- Consume the specified number of runes.
         for i = 1, amount do
             t.expiry[ 1 ] = ( t.expiry[ 4 ] > 0 and t.expiry[ 4 ] or state.query_time ) + t.cooldown
             table.sort( t.expiry )
         end
-
-        -- TODO:  Rampant Transference
-        state.gain( amount * 10 * ( state.buff.rune_of_hysteria.up and 1.2 or 1 ), "runic_power" )
-
-        if state.talent.rune_strike.enabled then state.gainChargeTime( "rune_strike", amount ) end
-
+    
+        -- Handle Runic Power gain, considering Rampant Transference or Rune of Hysteria.
+        local rpGainMultiplier = state.buff.rune_of_hysteria.up and 1.2 or 1
+        state.gain( amount * 10 * rpGainMultiplier, "runic_power" )
+    
+        -- Handle Rune Strike cooldown reduction if applicable.
+        if state.talent.rune_strike.enabled then
+            state.gainChargeTime( "rune_strike", amount )
+        end
+    
+        -- Handle Eternal Rune Weapon interactions (Dancing Rune Weapon synergy).
         if state.buff.dancing_rune_weapon.up and state.azerite.eternal_rune_weapon.enabled then
-            if state.buff.dancing_rune_weapon.expires - state.buff.dancing_rune_weapon.applied < state.buff.dancing_rune_weapon.duration + 5 then
-                state.buff.eternal_rune_weapon.expires = min( state.buff.dancing_rune_weapon.applied + state.buff.dancing_rune_weapon.duration + 5, state.buff.dancing_rune_weapon.expires + ( 0.5 * amount ) )
+            local maxExtension = state.buff.dancing_rune_weapon.duration + 5
+            if state.buff.dancing_rune_weapon.expires - state.buff.dancing_rune_weapon.applied < maxExtension then
+                state.buff.eternal_rune_weapon.expires = min(
+                    state.buff.dancing_rune_weapon.applied + maxExtension,
+                    state.buff.dancing_rune_weapon.expires + ( 0.5 * amount )
+                )
             end
         end
-
+    
+        -- Invalidate the actual rune count to force recalculation.
         t.actual = nil
     end,
+    
 
     timeTo = function( x )
         return state:TimeToResource( state.runes, x )
