@@ -1302,14 +1302,6 @@ spec:RegisterHook( "reset_precast", function ()
     if state:IsKnown( "deaths_due" ) and cooldown.deaths_due.remains then setCooldown( "death_and_decay", cooldown.deaths_due.remains )
     elseif talent.defile.enabled and cooldown.defile.remains then setCooldown( "death_and_decay", cooldown.defile.remains ) end
 
-    -- Reset CDs on any Rune abilities that do not have an actual cooldown.
-    --[[for action in pairs( class.abilityList ) do
-        local data = class.abilities[ action ]
-        if data and data.cooldown == 0 and data.spendType == "runes" then
-            setCooldown( action, 0 )
-        end
-    end--]]
-
     if talent.infliction_of_sorrow.enabled and buff.gift_of_the_sanlayn.up then
         state:QueueAuraExpiration( "gift_of_the_sanlayn", TriggerInflictionOfSorrow, buff.gift_of_the_sanlayn.expires )
     end
