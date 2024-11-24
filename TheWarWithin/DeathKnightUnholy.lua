@@ -141,7 +141,6 @@ spec:RegisterResource( Enum.PowerType.Runes, {
     end
 }))
 
-
 spec:RegisterResource( Enum.PowerType.RunicPower )
 
 
