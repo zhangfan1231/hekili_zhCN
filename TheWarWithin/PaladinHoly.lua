@@ -642,9 +642,7 @@ spec:RegisterHook( "reset_precast", function()
 end )
 
 spec:RegisterHook( "spend", function( amt, resource )
-    
-    if amt == 0 or amt == nil then Hekili:Print("Free spend detected: ", state.this_action, " spending ", amt, " ", resource) end
-    
+        
     if amt > 0 and resource == "holy_power" then
         if talent.tirions_devotion.enabled then
             reduceCooldown( "lay_on_hands", amt * 1.5 )
