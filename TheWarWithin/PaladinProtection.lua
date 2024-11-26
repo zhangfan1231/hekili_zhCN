@@ -1667,11 +1667,11 @@ spec:RegisterAbilities( {
     -- Talent: Heals a friendly target for an amount equal to 100% your maximum health. Cannot be used on a target with Forbearance. Causes Forbearance for 30 sec.
     lay_on_hands = {
         id = function() if talent.empyreal_ward.enabled then
-            return 633 end
-            return 471195
+            return 471195 end
+            return 633
         end,
         cast = 0,
-        cooldown = function () return 600 * ( talent.unbreakable_spirit.enabled and 0.7 or 1 ) * ( 1 - 0.3 * talent.uthers_counsel.rank ) end,
+        cooldown = function () return 600 * ( talent.unbreakable_spirit.enabled and 0.7 or 1 ) * ( talent.uthers_counsel.enabled and 0.7 or 1 ) end,
         gcd = "off",
         school = "holy",
 
@@ -1683,9 +1683,12 @@ spec:RegisterAbilities( {
 
         handler = function ()
             gain( health.max, "health" )
-            applyDebuff( "player", "forbearance" )
-            if azerite.empyreal_ward.enabled then applyBuff( "empyrael_ward" ) end
+            if talent.tirions_devotion.enabled then gain( 0.05 * mana.max, "mana" ) end
+            -- applyDebuff( "", "forbearance" )
+            if talent.empyreal_ward.enabled then applyBuff( "empyrael_ward" ) end
         end,
+
+        copy = { 633, 471195 }
     },
 
     -- Talent: For the next 15 sec, you generate an absorb shield for 20% of all damage you deal, and Avenger's Shield damage is increased by 20% and its cooldown is reduced by 75%.
