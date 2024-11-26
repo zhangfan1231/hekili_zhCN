@@ -1440,7 +1440,7 @@ spec:RegisterAbilities( {
 
     -- Talent: Empowers you with the spirit of ancient kings, reducing all damage you take by 50% for 8 sec.
     guardian_of_ancient_kings = {
-        id = function () return IsSpellKnownOrOverridesKnown( 212641 ) and 212641 or 86659 end,
+        id = function () return IsSpellKnownOrOverridesKnown( 228049 ) and 228049 or 86659 end,
         cast = 0,
         cooldown = function () return 300 - ( conduit.royal_decree.mod * 0.001 ) end,
         gcd = "off",
