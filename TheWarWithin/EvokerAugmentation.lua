@@ -199,6 +199,13 @@ spec:RegisterAuras( {
         friendly = true,
         no_ticks = true
     },
+    -- Damage taken has a chance to summon air support from the Dracthyr.
+    bombardments = {
+        id = 434473,
+        duration = 6.0,
+        pandemic = true,
+        max_stack = 1,
+    },
     -- Exposing Temporal Wounds on enemies in your path. Immune to crowd control.
     breath_of_eons = {
         id = 403631,
@@ -879,6 +886,7 @@ spec:RegisterAbilities( {
             return 3 - ( talent.volcanism.enabled and 1 or 0 )
         end,
         spendType = "essence",
+        cycle = function() if talent.bombardments.enabled and buff.mass_eruption_stacks.up then return "bombardments" end end,
 
         talent = "eruption",
         startsCombat = true,
