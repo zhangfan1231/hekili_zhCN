@@ -1666,7 +1666,10 @@ spec:RegisterAbilities( {
 
     -- Talent: Heals a friendly target for an amount equal to 100% your maximum health. Cannot be used on a target with Forbearance. Causes Forbearance for 30 sec.
     lay_on_hands = {
-        id = 633,
+        id = function() if talent.empyreal_ward.enabled then
+            return 633 end
+            return 471195
+        end,
         cast = 0,
         cooldown = function () return 600 * ( talent.unbreakable_spirit.enabled and 0.7 or 1 ) * ( 1 - 0.3 * talent.uthers_counsel.rank ) end,
         gcd = "off",
