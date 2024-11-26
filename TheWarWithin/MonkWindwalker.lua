@@ -1522,22 +1522,28 @@ spec:RegisterAbilities( {
         end,
     },
 
-    -- Talent: Incapacitates the target for $d. Limit 1. Damage will cancel the effect.
     paralysis = {
         id = 115078,
         cast = 0,
-        cooldown = function() return talent.improved_paralysis.enabled and 30 or 45 end,
+        cooldown = function() return 45 - ( 7.5 * talent.ancient_arts.rank ) end,
         gcd = "spell",
         school = "physical",
 
         spend = 20,
         spendType = "energy",
+        toggle = function() if talent.pressure_points.enabled then return "interrupts" end end,
 
         talent = "paralysis",
-        startsCombat = false,
+        startsCombat = true,
+
+        usable = function () if talent.pressure_points.enabled then
+            return buff.dispellable_enrage.up end
+            return true
+        end,
 
         handler = function ()
             applyDebuff( "target", "paralysis" )
+            if talent.pressure_points.enabled then removeBuff( "dispellable_enrage" ) end
         end,
     },
 
