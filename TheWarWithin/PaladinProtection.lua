@@ -774,8 +774,8 @@ spec:RegisterAuras( {
 
     -- Azerite Powers
     empyreal_ward = {
-        id = 287731,
-        duration = 60,
+        id = 387792,
+        duration = 8,
         max_stack = 1,
     },
 
@@ -1054,6 +1054,10 @@ spec:RegisterAbilities( {
 
         talent = "avengers_shield",
         startsCombat = true,
+        max_targets = function() if talent.soaring_shield.enabled then
+                return 5 end
+                return 3
+            end,
 
         handler = function ()
             applyDebuff( "target", "avengers_shield" )
@@ -1066,7 +1070,7 @@ spec:RegisterAbilities( {
             if talent.crusaders_resolve.enabled then applyDebuff( "target", "crusaders_resolve" ) end
             if talent.first_avenger.enabled then applyBuff( "first_avenger" ) end
             if talent.gift_of_the_golden_valkyr.enabled then
-                reduceCooldown( "guardian_of_ancient_kings", 0.5 * talent.gift_of_the_golden_valkyr.rank * min( active_enemies, 3 + ( talent.soaring_shield.enabled and 2 or 0 ) ) )
+                reduceCooldown( "guardian_of_ancient_kings", 1 * talent.gift_of_the_golden_valkyr.rank * min( active_enemies, action.avengers_shield.max_targets ))
             end
             if talent.refining_fire.enabled then applyDebuff( "target", "refining_fire" ) end
             if talent.strength_in_adversity.enabled then addStack( "strength_in_adversity", nil, min( active_enemies, 3 + ( talent.soaring_shield.enabled and 2 or 0 ) ) ) end
@@ -1440,7 +1444,7 @@ spec:RegisterAbilities( {
 
     -- Talent: Empowers you with the spirit of ancient kings, reducing all damage you take by 50% for 8 sec.
     guardian_of_ancient_kings = {
-        id = function () return IsSpellKnownOrOverridesKnown( 212641 ) and 212641 or 86659 end,
+        id = function () return IsSpellKnownOrOverridesKnown( 228049 ) and 228049 or 86659 end,
         cast = 0,
         cooldown = function () return 300 - ( conduit.royal_decree.mod * 0.001 ) end,
         gcd = "off",
@@ -1456,7 +1460,7 @@ spec:RegisterAbilities( {
             if conduit.royal_decree.enabled then applyBuff( "royal_decree" ) end
         end,
 
-        copy = { 86659, 212641 }
+        copy = { 86659, 212641, 228049 }
     },
 
     -- Empowers the friendly target with the spirit of the forgotten queen, causing the target to be immune to all damage for 10 sec.
@@ -1666,7 +1670,10 @@ spec:RegisterAbilities( {
 
     -- Talent: Heals a friendly target for an amount equal to 100% your maximum health. Cannot be used on a target with Forbearance. Causes Forbearance for 30 sec.
     lay_on_hands = {
-        id = 633,
+        id = function() if talent.empyreal_ward.enabled then
+                return 633 end
+                return 471195
+            end,
         cast = 0,
         cooldown = function () return 600 * ( talent.unbreakable_spirit.enabled and 0.7 or 1 ) * ( 1 - 0.3 * talent.uthers_counsel.rank ) end,
         gcd = "off",
@@ -1680,8 +1687,9 @@ spec:RegisterAbilities( {
 
         handler = function ()
             gain( health.max, "health" )
-            applyDebuff( "player", "forbearance" )
-            if azerite.empyreal_ward.enabled then applyBuff( "empyrael_ward" ) end
+            if talent.tirions_devotion.enabled then gain( 0.05 * mana.max, "mana" ) end
+            -- applyDebuff( "", "forbearance" )
+            if talent.empyreal_ward.enabled then applyBuff( "empyrael_ward" ) end
         end,
     },
 
